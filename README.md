@@ -1,3 +1,3 @@
 ## Schlomo Personal Archive
 
-Idea found at schlomo/schlomo-personal-archive
+Idea found at https://stackoverflow.com/a/53218452
