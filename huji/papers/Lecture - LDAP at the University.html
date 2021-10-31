@@ -1,0 +1,247 @@
+<html>
+
+<head>
+<title>Dir@LDAP</title>
+</head>
+
+<body>
+
+<H1 ALIGN=center>Dir@LDAP - What, Why, When, How</H1>
+<TABLE  BORDER=0 ALIGN=right>
+<TR><TD>
+<EM>
+By Schlomo Schapiro
+<BR>
+Hebrew University of Jerusalem
+<BR>
+<A HREF="mailto:huji@schlomo.schapiro.org.REMOVE.THIS">huji at schlomo dot schapiro dot org</A>
+</EM>
+</TR></TD>
+</TABLE>
+<HR WIDTH=95% ALIGN=left>
+<H2>LDAP & Directory Introduction</H2>
+<P>
+<STRONG>LDAP = <U>L</U>ightweight <U>D</U>irectory <U>A</U>ccess <U>P</U>rotocol</STRONG>. A protocol to access a hierarchical database ("Directory") over TCP/IP. The Directory has to comply with a certain standard regarding how it is organized, what kind of data structures exist, how certain standard entities are called (e.g. User ...) and many more details. This leads to a standardized access method to Directories and a standardized syntax for accessing user information that is independent of the specific implementation of the Directory Server.
+</P>
+<P>
+<STRONG>In a Directory the data is organized hierarchically similar to a file-system</STRONG>. Under a single root object there can be either container objects (similar to directories) or leaf objects (like files). All objects carry information in the form of attribute-value pairs with many different types of values (strings, numbers, multiple strings/numbers, addresses, links to other objects etc.). The structure of the objects (e.g. what attributes of what type they possess) is called the <STRONG>Schema</STRONG> of the Directory, a hierarchical tree of definitions.
+</P>
+<P>
+<STRONG>Some object types and attributes are standard and mandatory (by the LDAP spec)</STRONG>: User, Organization, Country, Organizational Unit and Common Name, <U>A</U>ccess <u>C</u>ontrol <u>L</u>ists, Object ID, Locality etc. In addition to the pre-defined objects and attributes one can define an unlimited variety of objects and attributes or extend existing objects by new attributes. These are called <STRONG>Schema Extensions</STRONG>. With the help of such extensions it is possible to map almost any data structure for any need into the Directory, like Workstations, Doors, Campuses, Cars ...
+</P>
+<P>
+<STRONG>The hierarchical structure of the Directory allows for inheritance in many cases</STRONG>: ACLs are inherited from the parent object (unless the <STRONG>Inheritance Filter</STRONG> is used), the schema of an object can be inherited from another object and then extended (e.g. to make a custom user object). Many applications make use of the hierarchical structure to assign features via a parent object (e.g: Allow all users in a container to print by allowing the container to print), though this is a feature of the application and not the Directory itself.
+</P>
+<P>
+<STRONG>LDAP provides user-level security and encrypted access</STRONG>. A client has to authenticate itself via a User object and only then it can access data (read/write attributes of objects, manipulate objects ...) in the Directory according to its rights as defined via the ACLs. The LDAP server enforces this security and the ACLs, meaning that it is a closed system where the data and it's access rights are kept together. For anonymous access a Public User is predefined and can be assigned ACLs.
+</P>
+<P>
+<STRONG>In general an LDAP server only stores information</STRONG> and does not process it as opposed to a relational database or an application server. All data processing has to be done outside of the LDAP server, usually in the client or middle-ware between the LDAP server and the user. This means that an LDAP server can not store dynamical data (e.g. data which should look different each time it is requested, like OTPs or the current time) or pre- or postprocess the data. The advantage of this is that LDAP servers are exchangeable easily since they provide only data storage and do not contain any application logic. Because of this strict separation between data storage and data processing and the well-defined standard of LDAP as data access protocol it is easy to exchange LDAP servers without interfering with all the existing applications and clients that make use of the LDAP server.
+</P>
+<P>
+<STRONG>LDAP is a very "convenient" protocol</STRONG>. There are several LDAP libraries for almost all programming languages which give easy and simple access to the LDAP server. Since it runs over TCP/IP and the full source of the libraries is available it should run on any computer that can compile C and provides TCP/IP networking. This allows for easy integration of LDAP into existing and new applications and, since LDAP is a non-proprietary standard in itself, it is a safe investment into the future of information technology and data access.
+<P>
+<STRONG>Links:</STRONG><BR>
+<UL>
+<li><A TARGET="_blank" HREF="http://www.sunworld.com/unixinsideronline/swol-10-1996/swol-10-ldap_p.html">
+			Introductory article on LDAP</A>
+			in the October 1996 SunWorld
+<li><A TARGET="_blank" HREF="http://sendmail.net/?feed=donnellyldap01">
+			LDAP Introduction</A>
+			on sendmail.net
+<li><A TARGET="_blank" HREF="http://www.innosoft.com/ldapworld/ldapv3.html">
+			Lightweight Directory Access Protocol (Version 3) Specifications 
+     </A>
+</UL>
+</P>
+
+<H2>A Directory for the whole University - HujiDir</H2>
+<P>
+<STRONG>There is a need for a central database of users at HUJI</STRONG>. Currently there are many different user databases in use and only part of them are synchronized in terms of account names (and passwords), user information, user rights etc. Also there is no central registry of accounts, meaning that it is impossible to know for sure at which computers a given user can log on or whether he has more than one username on different machines. There is also no central place where one can obtain information about users (like name, location, phone, department ...) and today we have to query several databases and are still not sure that we got all the information (see below for details).
+</P>
+<P>
+<STRONG>A central Directory of users at the University has many benefits</STRONG>: 
+<UL>
+<LI>A central (and authoritative) source of information regarding people at the university (at least those who have contact with the University information systems).
+<LI>A single place for user objects with password (meaning that the same person uses the same password everywhere).
+<LI>A central database will integrate all participating systems in a "natural" way as users expect it.
+<LI>User management via modern, graphical and user-friendly tools.
+<LI>Distribution of user management authority according to the needs of the departments.
+<LI>Separation of admin rights for computers from user management.
+<LI>Integration of various user information and other entities (like computers, doors, printers, classes etc.) under one system (Examples: Giving a user the right to use a computer in the lab also allows him to open the door to the lab and print from the lab, Students get certain applications and rights according to which courses they take).
+</UL>
+</P>
+<P>
+<STRONG>It is feasible now to create such a Directory</STRONG>. Current technology gives us the tools necessary to implement HujiDir with existing <STRONG>standard technology</STRONG> since it now matches our demands on such a Directory:
+<UL>
+<LI>Standardized access via LDAP.
+<LI>Geographically Distributed and Fault-Tolerant through partitions and replicas.
+<LI>Flexible and extensible through Schema Extensions.
+<LI>Move from custom developed historical systems towards standard systems.
+</UL>
+</P>
+<P>
+<STRONG>Today standard solutions fulfill our demands</STRONG>:
+<UL>
+<LI>Distributed Database
+<LI>Data Replication between servers far away
+<LI>Partitioning to put master replicas where they belong
+<LI>Schema Extensions give full freedom regarding the data
+<LI>Standard access methods
+</UL>
+</P>
+
+<H2>Current Systems at HUJI - Legacy support</H2>
+<P>
+<STRONG>Currently there is a wide range of unsynchronized systems in use</STRONG>:
+<UL>
+<LI>At least one Novell NDS Tree per campus
+<LI>LDAP database to search for people, fed mostly from Register
+<LI>The Register synchronizes accounts between most Unix systems
+<LI>Many VMS and Unix systems are not synchronized at all
+<LI>No synchronization with Windows servers
+<LI>The IS department manages much information on the University, students, staff, departments etc. This is mostly used as backend for other systems (like the Register), though some information systems developed by the IS authenticate against the IS database for information purposes (e.g. the student web information system).
+<LI>All systems use different management tools, most not user-friendly (cryptic text mode tools)
+<LI>No central user management, no central user information repository
+<LI>Knowledge of these systems is tied to special people, <STRONG>all</STRONG> current synchronization is done by non-standard systems
+</UL>
+</P>
+<P>
+<STRONG>Old systems will be supported and make use of the HujiDir</STRONG>. Many more recent computer systems are able to access an LDAP directory natively. But many old systems are not. They will be supported by <STRONG>middle ware</STRONG> that gives them an appropriate interface whilst using the LDAP directory in the background. Like this it is possible to integrate all systems in the University with the HujiDir. For example, the Register will be such a "middle tier" between all systems that currently use the Register and won't or can't make use of the LDAP Directory directly.
+</P>
+<P>
+<STRONG>OTPs will be supported via an OTP server</STRONG>. A LDAP Directory server cannot, by it's nature, serve dynamic data. Therefore it can only store passwords and cannot serve One Time Passwords as we use now. Therefore all computer systems that will require OTP passwords will authenticate against an OTP server (e.g. Register) which in turn uses the LDAP directory as backend to retrieve user information. All other applications which need processed data will make use of such a "middle tier" to process the data from the LDAP Directory and deliver it to a client.
+</P>
+
+<H2>Applications</H2>
+<P>
+<STRONG>All new applications can access user information via a single, standard interface</STRONG>. This means that they will be less dependant on existing proprietary protocols or servers, usable in all departments of the University with only minor changes in their <STRONG>configuration</STRONG>. Also many existing applications can make use of the LDAP interface, which will bring them into the unified user management of the University.
+</P>
+<P>
+<STRONG>Applications in the pipeline that could immediately benefit</STRONG>:
+<UL>
+<LI>Various printers, give printing rights and keep quotas
+<LI>Help-Desk (store information about users)
+<LI>eLearning (access control, groups, courses etc.)
+<LI>Cross-campus logins of students (according to courses they take etc.)
+<LI>Internet Dialup
+<LI>Reuse accounts for all systems instead of creating multiple accounts
+<LI>Convenient, unified administration
+<LI>IP Telephony requires an LDAP Directory as authentication and management backend.
+</UL>
+</P>
+<P>
+<STRONG>Several Management Interfaces are available for LDAP Directories</STRONG>. From simple command-line utilities (<EM>ldapsearch, ldapmodify, ldapadd</EM>) through batch tools (<EM>LDIF</EM>) to sophisticated GUI systems (<EM>Novell Console One, Netscape Delegated Administrator</EM>, etc.) all management programs make use of the LDAP interface to manipulate the Directory. Furthermore exist standard LDAP API libraries for most operating system and programming languages allowing us to always write the "missing link" ourselves. The LDAP server enforces user rights to objects and concurrent access from different tools is possible.
+</P>
+
+<H2>What is <U>in</U> the Directory ?</H2>
+<P>
+<STRONG>The content and structure of the Directory are the main issues</STRONG> after resolving the principal and technical questions. They will determine the usability, functionality and eventually the success of a University-wide Directory in the face of reality. The main factors are:
+<UL>
+<LI>The Directory has to contain all useful and important information and not only an excerpt.
+<LI>The structure and organization of the Directory has to represent real-world closely enough to be useful as information in itself (e.g. to determine to what department a person belongs).
+<LI>The Directory has to be the master repository for the data it contains (or at least parts of it). Otherwise the Directory will be only an information database and not be usable for administration purposes.
+<LI>Real-world "access rights" have to be represented in the Directory. If not, it will not be possible to enter all relevant data into the Directory for obvious reasons of security.
+</UL>
+</P>
+<P>
+<STRONG>The Directory must contain the following items</STRONG>:
+<UL>
+<LI>User accounts for authentication of users against the Directory
+<LI>General Information about users
+<LI>Representation of the Organizational Structure of the University.
+<LI>Authorization information for users regarding access rights to information in the Directory.
+</UL>
+Additionally it should contain:
+<UL>
+<LI>Unique representation of each real-world person as user.
+<LI>Full information about each user regarding computer accounts and other resources used by the user.
+<LI>Representation of Campuses, Buildings, computers, other equipment.
+<LI>Representation of other resources (like Dial-up modems).
+<LI>Access given to users to those objects should influence the real world.
+<LI>Representation of administrative structure according to real-world.
+</UL>
+</P>
+
+
+<H2>Security Issues</H2>
+<P>
+<STRONG>Access to the Directory is secured via SSL and a username/password authentication</STRONG>. This establishes a client as a defined user in the LDAP Directory. The exact type of the password depends on the LDAP server (plain-text, challenge-response, etc.). All operations of the client in the Directory are checked against the user's ACLs on the object in question. An anonymous user exists for public access, this allows for anonymous access to the Directory. Of course also the anonymous user has ACLs and can thus be prevented from accessing specific information (or all).
+</P>
+<P>
+<STRONG>All security within the Directory is governed by the ACLs</STRONG>. This means that the sole responsibility lies with the administrators who manage the Directory and with defining correct data access rights when adding data. The exact granularity of the ACLs depends on the LDAP server, but some servers allow to define ACLs on the level of single attributes of single objects. Also inherited rights filters exist to allow assigning rights to a parent object (e.g. container) so that the assignment gives rights to all descendant objects or their attributes.
+</P>
+
+<H2>Political / Management / Legal Issues</H2>
+<P>
+<STRONG>It is a strategic decision by the management whether to create the HujiDir</STRONG>. Everybody agrees that some kind of central information repository is necessary. Besides LDAP there are no competing standards that are so widely supported and available in open source as well as easy to use. Only with LDAP can we achieve the high level of integration that is needed now by the University. But the <EM>decision</EM> has to be done from above.
+</P>
+<P>
+<STRONG>After deciding in favor of a central Directory, guidelines have to be established</STRONG>. Legal issues will dictate what information can be put into the Directory and made available to whom. The security infrastructure guarantees that only those who are allowed to can access information, but these definitions have to be given. Also administrative rights have to be carefully defined to enable everybody to edit the information that they are responsible for while preventing access to information that is restricted. This enables us to define local administrators with very limited and specialized administrative rights thus allowing true distributed and de-centralized administration.
+</P>
+
+<H2>Where to go from here ?</H2>
+<P>
+<P>
+<STRONG>First we have to decide on the LDAP technology to use</STRONG>. There are several possible LDAP servers on the market: 
+<UL>
+<LI>Novell eNDS 8.5: Runs on most platforms (NetWare, Linux, Solaris, Windows), we have a site license, supports sophisticated replication (read/write replicas) and partitioning, supports ACLs at a highly detailed level. Novell's Directory is proven since 10 years and experienced staff is available.
+<LI>OpenLDAP 2.0.7: Runs on Unix only, free, open source, master/slave replication (only read-only replicas), partitioning, ACLs unknown. OpenLDAP specialist available.
+<LI>Netscape's iPlanet server: Another proprietary software from Netscape
+<LI>Microsoft Win2000 Active Directory: Microsofts Directory server is yet unproven and this is it's first version. Never use any "First Version" of Microsoft.
+</UL>
+There are more LDAP server which are not a consideration for various reasons (Proprietory technology, expensive, not enough support of ACLs/replication/partitioning, etc.).
+</P>
+<P>
+<STRONG>
+Only Novell's eNDS offers full integration with Windows on the OS level</STRONG> (Authenticate users, assign login rights, assign Applications to be used, etc.), if we disregard the Win2000 Active Directory . Since we have to support Hebrew for the end-users we have to support MS Windows as the base OS for the broad public. Therefore a tight integration of the user management with MS Windows is very important. Novell's eNDS integrates with Windows not via LDAP but via Novell's Client32 NetWare Client which accesses the eNDS server over Novell's NDAP protocoll (Novell Directory Access Protocol) if the eNDS server runs on NetWare. The advantage of this combination (eNDS on NetWare) is the easy integration with Windows which we cannot achieve via any other combination of LDAP Directory server and host OS. Novell NetWare with NDS has proven itself over the last 5 years as a reliable backbone for most PCs at the Hebrew University and the Computation Authority has staff experienced in NDS on NetWare on all campuses. With the addition of LDAP to the NDS server as directory access interface the formerly proprietory NDS server opens up to become a standard LDAP server which can be used by any LDAP client while in addition preserving the tight integration with Windows as a client OS.
+</P>
+<P>
+<STRONG>Through the LDAP interface non-Windows clients can now easily access the NDS Directory</STRONG> and be integrated almost as tight as Windows into the Directory. Most modern Unix flavours support PAM and therefore a flexible authentication scheme (also against an LDAP server). Also for Macintosh clients there is native client support available (using NDAP to access the NDS). Applications can access the NDS via the new LDAP interface. This gives us a vertical integration from the OS level to the application level (assuming that future applications will use LDAP to access the Directory). All this together provides the highest level of integration possible while <STRONG>using only standard software</STRONG>.
+</P>
+<P>
+<STRONG>Our current Novell NDS Directory serves as a pilot project</STRONG>. With the upcoming installation of eNDS 8.5 in Givat Ram all our Novell servers will also be LDAP servers. The Givat Ram NDS Directory will serve as a test suite to plan and develop the implementation of the HujiDir. On the NDS Directory we can test different forms of implementation at the Unix side and experiment with different schema layouts to best organize the information we want to store in the Directory. Doing all this with real-world data will allow us to plan the new Directory much faster than with special demo systems since we can make small test implementations that replace existing systems.
+</P>
+<P>
+<STRONG>The most important part of planning is the design of the Directory</STRONG>. Some basic guidelines are:
+<UL>
+<LI>The Directory has to be organized by the hierarchical structure of the Hebrew Univerisity and not by campuses.
+<LI>Partitions have to be set according to faculties/departments/units etc.
+<LI>Replicas will be used to solve bandwith problems and cross-campus availability of the Directory.
+<LI>Design of the object types and attributes.
+<LI>Set guidelines for object creation:
+	<UL>
+	<LI>Single object per real-world person.
+	<LI>Multiple user objects per real-world person linked to the unique object.
+	<LI>All information for the real-world person is concentrated in the unique object.
+	</UL>
+<LI>Create administrative structure of the Directory that allows detailed assignment of administrative roles.
+</UL>
+</P>
+<P>
+<STRONG>Next we have to plan how to bring content into the Directory</STRONG>. The hookup of the Directory to existing master information repositories (like the Information System's database) has to be automatized to allow automatic updates of the Directory or vice versa. Likewise many other information systems have to be synchronized with the Directory, all this is done via custom-made batch tools which update either system on a regular base. This will very fast create the desired central user information database while keeping existing systems running as before. On the base of this synchronization we can slowly proceed to replace old legacy systems with direct access to the Directory (via LDAP). All units interviewed by me are ready to participate in the Directory at least by feeding their information into the Directory. The Directory Group will have to coordinate these efforts and solve any conflicts in the information provided by different sources.
+</P>
+<P>
+<STRONG>After the planning we will proceed to implement the HujiDir in reality</STRONG>. We will create a new Directory according to the guidelines developed during planning, populate the Directory through synchonization with existing information systems and migrate existing applications to the new Directory. New systems and applications will be required to use the Directory as user repository from the beginning. At the same time legacy support will be implemented by helper servers (e.g. for OTPs) that work with the Directory as backend.
+</P>
+<!--<P>
+<STRONG>As more and more applications will be able to use the Directory directly</STRONG> and as more management will be done from within the Directory, the Directory will turn into a central information repository which will unify user management in an unprecedented way at the Hebrew University
+</P>
+-->
+<P>
+<STRONG>Finally all University systems that require any kind of information about people will use the HujiDir as a central information database and thus give true integration of all systems with the same username, password and other personal attributes.</STRONG>
+</P>
+<!--<BR>
+<P>
+<STRONG>This is an opportunity to end the diversion of information systems and create a new combined universal information repository</STRONG>. Many parts of the University got used over the years to have to develop their own information systems and cooperation was little to non-existant. Now we stand before the possibility to combine our energies and pool the knowledge to create a new, common and standard information repository for all user-related purposes, the HujiDir.
+</P>
+-->
+<hr>
+<em>
+<script language="JavaScript" type="text/javascript">
+         document.write("Last Modified " + document.lastModified)
+</script>
+</EM>
+</body>
+
+</html>

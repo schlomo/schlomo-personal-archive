@@ -1,0 +1,21 @@
+@echo off
+c:
+cd \patchws
+del dopatch
+\updatews\lsl >nul:
+type wsobj.beg >wsobj.reg
+\updatews\e100bodi | findmac >>wsobj.reg
+\updatews\e100bodi /u >nul:
+\updatews\lsl /u >nul:
+type wsobj.end >>wsobj.reg
+regedit2 wsobj.reg
+
+rem Saving regbkup info for regfix.bat
+attrib c:\win95\system.dat -r -h -s
+attrib c:\win95\user.dat -r -h -s
+copy c:\win95\system.dat c:\win95\regbkup\system.dat /y >nul:
+copy c:\win95\user.dat c:\win95\regbkup\user.dat /y >nul:
+copy c:\win95\system.ini c:\win95\regbkup\system.ini /y >nul:
+copy c:\win95\win.ini c:\win95\regbkup\win.ini /y >nul:
+attrib c:\win95\system.dat +r +h +s
+attrib c:\win95\user.dat +r +h +s

@@ -1,0 +1,150 @@
+Restore Default Settings v1.1
+
+1998 G. S. Schapiro
+
+Files:
+
+RDS.EXE         Main Program
+HELP.TXT        Help showed in program (can be Hebrew)
+RDS.INI         Main config file
+PREBAT.INI      Prologue batch
+POSTBAT.INI     Epilogue batch
+COMMAND.INI     Command Interpreter config
+*.dpr,*.pas,*.dfm...    Delphi source files
+
+
+Abstract:
+
+RDS is a program to restore the default settings of individual programs.
+
+
+Working:
+
+RDS reads its main config file (RDS.INI) and builds a temporary
+batchfile (%TEMP%RDS.BAT). This batch consists of PREBAT.INI, one line per
+selected program from RDS.INI and POSTBAT.ini. RDS.BAT is then executed and
+RDS terminates. RDS.BAT has to delete itself (from POSTBAT.INI). See Appendix
+for examples for all configuration files.
+
+Config files format:
+
+RDS.INI must contain an even number of lines. Each pair defines the title and
+the action for one program. There may be up to 12 programs, e.g. RDS.INI may
+contain up to 24 lines. The first line of a pair defines the name the program
+gets. This name is displayed in RDS next to a checkbox. The second line of a
+pair defines the action to be taken. Use CALL to call other batches since this
+line will be part of a BATCH file (see examples). Use & in program name to
+denote it's hotkey. Use && for &.
+
+
+COMMAND.INI must contain at least one line (only the first line is read). This
+line tells RDS how to call the batchfile. RDS appends the name of the
+batchfile to the first line from COMMAND.INI and executes it using WinExec.
+The execution is marked as minimized to prevent users from seeing the workings
+of the system. In the command line you can use DOS environment vaiables which
+will be substituted at run-time. E.g. "%COMMAND% /c" is a good example, provided
+%COMMAND% points to some command.com or other command processor.
+
+PREBAT.INI is put before the actual actions from RDS.INI. Put startup
+commands in it, like echo off or neccessary drive mappings.
+
+POSTBAT.INI is put after all actions and should remove drive mappings,
+temporary files and %TEMP%RDS.BAT (see Appendix for example).
+
+HELP.TXT is the file shown when the user presses the Help button. The text will
+be automatically left or right justified according to the majority of the
+letters in the firsrt line: If there are more letters with ASCII code > 127 then
+the whole help windows will be right justified. Otherwise it will be left
+justified (This is to have some sort of automatic Hebrew/English detection)
+
+
+Command Line Parameters
+
+RDS also has a batch mode where it performs actions without user intervention.
+Options:
+/?      Prints Usage information
+/f      Force all updates
+/n      Update nr. n from RDS.ini (n=1..12)
+        more than one is permitted, e.g. /1 /2 /10
+
+
+Notes:
+
+No error checking is done. You must be sure that all files mentioned above
+exist and are readable. Also the TEMP environment variable must exist,
+otherwise RDS will try to create RDS.BAT in the current dir (or fail).
+
+In batch mode the main window appears for a very short time. This is not a
+bug (nor intended) but I don't know how to do it better without completely
+blowing up the source code.
+
+The Help text is either right or left justified. No mixded justification
+possible. If the first letter is a blank or a new line, the text will be
+left justified.
+
+The limit of 12 programs is chosen arbitrarily and connected to the size of
+the window.
+
+You have to use a resolution of at least 800x600 to see the whole window. In
+case you don't see the buttons, ESC always exits.
+
+The reason that RDS.EXE can't delete RDS.BAT is that I don't know how to wait
+for the batch process to finish before deleting RDS.BAT.
+
+If the Help windows is open when you pres Yes in the "Are you sure" window,
+for a short time you can see RDS.BAT in the Help window instaed of the help
+text. This is not a bug but a debugging help.
+
+
+Copyright:
+
+RDS is freeware. Only condition on distribution and further use or
+modification of the program or it's source code is that my name be mentioned
+in it and that the original idea was mine.
+
+
+Contact the Author:
+
+Schlomo Schapiro
+huji at schlomo dot schapiro dot org
+
+
+Appendix: - Sample files:
+
+1: RDS.INI
+-----------------------------------
+Netscape Mail & Navigator
+c:\win95\notepad.exe
+Borland C++
+call p:\rds\bcpp.bat
+Fortran 90
+copy m:\*.* h:\ /y
+-----------------------------------
+
+2: COMMAND.INI
+-----------------------------------
+p:\command.com /c
+-----------------------------------
+
+3: PREBAT.INI
+-----------------------------------
+@echo off
+map m:=huji-mars/usr:home/skel
+-----------------------------------
+
+4: POSTBAT.INI
+-----------------------------------
+map del m:
+if not exist %TEMP%RDS.bat set TEMP=%TEMP%\
+del %TEMP%RDS.bat
+-----------------------------------
+
+This deletes RDS.BAT without generating an error and compensates for ambiguety
+in the TEMP variable. Note the lack of a CR at the end. If there is a CR (= an-
+other line) after the del line, there will be an error message "Batch file not
+found " since DOS looks for the deleted batchfile to read further commands.
+
+Appendix: - Version history
+
+1.1 - 26.10.99      Added support for env vars in command.ini
+1.0                 Initial release

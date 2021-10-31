@@ -1,0 +1,261 @@
+ResBrow v 1.21
+
+1999,2000 - G. S. Schapiro
+
+Abstract:
+
+ResBrow is a IE4 (or higher) encapsulation in a very simple and restrictive
+user interface. The purpose is to give user access to the inter-/intranet without
+offering all the options and customization capabilities of the original IE.
+Therefore the user interface contains only the following parts:
+- Browser window
+- Back, Forward, Stop/Refresh, Home, Exit buttons
+- One user customizable button (e.g. Mail)
+- address bar.
+Furthermore ResBrow has a simple URL filter builtin that can be given allowed and
+forbidden tokens. Should the user try to browse to any forbidden location, he
+will get an error message.
+
+ResBrow also offers a kiosk mode, where it is the only application on the screen
+and cannot be closed or minimized. As such it is ideal as explorer replacement
+for web-kiosk computers.
+
+ResBrow is configured exclusively through command line options and does not
+require installation or any additional files besides the program executable.
+
+Requirements & Limitations
+
+ResBrow relies on an installed Internet Explorer version 4 or higher. All features
+(regarding HTML, active content and others) depend on IE and are not under control
+of ResBrow. This also means that in order to achieve a well-protected public
+browsing computer one has to disable many things in the Internet Options of
+Internet Explorer (see below under "Recommended Settings for Maximum Security").
+
+Command Line Syntax:
+
+Mode I: All options given on command line
+
+RESBROW /? will show the following dialog box:
+
+Restricted Browser v 1.21
+
+A highly restrictable IE browser for public access computers
+Needs IE 4 or higher installed to function
+
+Usage: ResBrow [Options] [URL]
+Options:
+  /HOME <URL>                Sets the home address
+  /NOURL                     Disables the Address bar
+  /MAX                       Opens the program maximized
+  /FORCEMAX                  As /MAX but doesn''t allow resizing
+  /CLOSEON <Token>           Close Browser if the token is found in URL
+  /NOCLOSE                   Prevents the program from beeing closed and
+                             disables Ctrl-Alt-Del and Task Manager on Win9x
+  /STAYTOP                   Forces the window to stay the topmost
+  /BUTTON <Label|Hint> <URL> Adds custom button that links to URL
+  /FET <Text>                Changes the Filter Error Text
+  /I <Token>                 Shows only URLs containing Token
+                             Use several /I to allow access to several sites
+  /X <Token>                 Restricts access to URLs containing Token
+                             Use several /X to combine limitations
+
+The URL supplied on the command line is taken for the
+initial URL. It has to be supplied after all options.
+Use /NOURL /FORCEMAX /NOCLOSE /STAYTOP for maximium
+Kiosk mode. Disable Ctrl-Alt-Del and the Task Manager (on NT).
+
+Written 16.12.1999 by Schlomo Schapiro
+
+
+/NOHOME sets the URL of the Home button (looks like a house).
+
+/NOURL disables the address bar of the browser (by seting it to readonly). The
+current URL will be shown in it, but the user cannot enter URLs. Very good if your
+site is closed and doesn't offer links outside.
+
+/MAX opens the window in it's maximized state. The user can minimize it and change
+it's size.
+
+/FORCEMAX opens the window maximized and doesn't allow the user to minimize it. In
+this mode the window is borderless (Attention: The Windows-M key DOES minimize
+the window, you have to disable it otherwise or not load explorer.exe as shell).
+
+/NOCLOSE prevents ResBrow from beeing closed by disableing the Exit button.
+ResBrow can be closed from the system menu. ResBrow can still be kicked out
+from the Task Manager. Therefore the /NOCLOSE option disables the Ctrl-Alt-Del
+and Alt-ESC keys (systemkeys). Unfortunatly this works only on Win9x, on NT you have
+to solve this problem otherwise (see Hints below). If this is enabled and the
+gets closed (e.g. through the system Menu or the /CLOSEON option), a new ResBrow
+window will be opened with the options of the original one.
+
+/STAYTOP sets the ResBrow window to be the topmost window. New windows will open
+behind the ResBrow window.
+
+/BUTTON <Label|Hint> <URL> enables the custom button. The button will bear the given
+Label and Hint. When clicked RewBrow navigates to the specified URL if it is allowed.
+
+/FET <Text> sets the message displayed to the user whenever ResBrow's URL filter
+stops a navigation. It defaults to
+"Access to the requested site has been restricted !"
+
+/I <Token> Adds a token to the pattern list of allowed URLs. In order for an URL
+to be displayed it has to contain at least one token from the pattern list. Example:
+RESBROW /I yahoo.com /I .mil /I .huji.ac.il
+This will allow browsing on *yahoo.com* , *.mil* and *.huji.ac.il*. But it will also
+allow browsing on sites like www.military-fanatics.com etc.
+If you specify any /I, ResBrow automatically adds /I "about: " (see below Hints).
+
+/X <Token> Adds a token to the exclusion pattern list. In order for an URL to be
+displayed none of the tokens in the exclusion list may appear in the URL. Example:
+RESBROW /X ftp: /X file: /X gopher: /X telnet: /X .zip /X .exe
+This will disable most common downloads and disable in general access to the
+protocols ftp, file, gopher and telnet since IE can't acess them without this.
+
+
+Mode II: Read Options from file or URL:
+
+RESBROW /@ <File>
+
+You can circumvent command line length limitations by putting all parameters
+into a file and running resbrow as follows:
+RESBROW /@ <File>
+If you use the /@ option you cannot specify any other option on the command
+line. The format of the file is as follows: Each line in the file is a parameters.
+Example:
+The Parameter Line
+/i huji /x ftp: /fet "Not Allowed" /button "Button|Hint Text" URL..
+Will translate into the following file:
+------------ File ------------
+/i
+huji
+/x
+ftp:
+/fet
+Not Allowed
+/button
+Button|Hint Text
+URL..
+---------- End of File -------
+
+Quotations marks are not neccessary in the file as each line is taken as a
+parameter. Be careful to put blank spaces at the end of lines only if you intend
+the blank space to be part of the parameter (e.g. "huji" is different from "huji "
+in the above example).
+
+RESBROW /@ <URL> [/SAVE]
+
+Instead of this you also can read the configuration file from an URL, then
+you have to replace the filename with a HTTP URL (e.g. http://server.com/config.dat)
+If you do so the first line must contain the word RESBROW only (without spaces
+before or after). This is to make sure that the downloaded file is indeed a ResBrow
+configuration file.
+
+If the downloaded file is not a ResBrow configuration file ReBrow will be completely
+locked (safe mode), print out an rerror message and try again in 1 minute.
+
+The optional /SAVE option will save a copy of the configuration file to the local
+harddisk (under %TEMP%). If for any reason ResBrow cannot retrieve the configuration
+information from the Internet, it will try to read the (previously saved)
+configuration file from %TEMP%. Only if this also fails it will go into safe mode
+as above. This is a second-level backup that ensures continued operation of ResBrow
+even if temporarily it's configuration server becomes unavailable.
+
+This is especially useful if you want to install many computers with ResBrow and
+want to have a central configuration for them.
+
+Recommended Settings for Maximum Security:
+
+1. The following registry values in
+[HKLM\Software\Policies\Microsoft\Internet Explorer\Restrictions]
+limit Internet Explorer (mostly useful to disable the context menu). All values
+have to be DWORDs and should be set to 1 to enable their function:
+NoFileOpen             Disables Open command on File menu, CTRL+O, and CTRL+L.
+
+NoFileNew              Disables CTRL+N
+
+NoBrowserSaveAs        Disables Save and Save As on the File menu.
+
+NoBrowserOptions       Disables Internet Options on the View menu.
+                       (Disables changing browser settings).
+
+NoFavorites            No Favorites menu, adding to favorites, or
+                       organizing favorites.
+
+NoSelectDownloadDir    Prevents user from being able to select download folder
+                       by not displaying the Save As dialog box when a file is
+                       downloaded.
+
+NoBrowserContextMenu   Disables all context menus.
+
+NoBrowserClose         Disable ALT+F4.
+
+NoFindFiles            Disables the F3 key.
+
+NoTheaterMode          Disables the F11 key.
+
+(I got this from http://www.novell.com/coolsolutions/zenworks/trenches/tr_school_security1_zw.html#iesetting)
+
+
+2. Settings in the Internet Options control panel
+
+2a. Change the security information for the Internet and Local Intranet zones as
+restrictive as you want (Disable all download related points and everything that
+requires user intervention). This is also the place to disable active content and
+scripting.
+
+2b. Disable things on the Advanced page. You should disable everything that might
+ask the user questions, disable sounds and movies if you don't want them or don't
+have a soundcard installed. Disable all checks (like for newer IE version). Disable
+most warnings (for change betwen secure & insecure site etc.). Disable searching
+from address bar.
+
+3. To prevent IE from launching external programs you should either prevent access
+to them (via file security on NT and NTFS) or remove/change the relevant entrys
+on [HKLM\Software\Classes] so that Windows won't know the file types.
+
+Hints:
+
+Before disabling the context menu, make sure that you either set the correct
+language encoding or enabled "Auto Select" in the encoding submenu and that
+your web-pages carry the apropriate <meta> tag for their encoding.
+
+On Windows NT the /noclose option does not disable the system keys (Ctrl-Alt-Del,
+Ctrl-ESC etc.). I found out that the best way to disable the Task Manager is to
+prevent the user who runs ResBrow from reading the %SYSTEM32%\TASKMGR.EXE file
+by settingappropriate security permissions (needs NTFS).
+
+Use quotation marks (") to protect parameters that contain spaces. Example:
+RESBROW /FET "The requested operation is not permitted"
+
+A simple way to display short messages to the user without creating a sperate
+HTML file is by using the following URL:
+about: This is a sample text
+The important part is the space AFTER the about: ! Without it the URL would be
+silently discarded.
+
+To disable all non-internet content (like res:\\....\xxx.dll?...) you can add
+/X \ to disable all URLs that contain \
+
+Copyright:
+
+ResBrow is freeware. Only condition on distribution and further use or
+modification of the program or it's source code is that my name be mentioned
+in it and that the original idea was mine. The source is not freeware, contact
+the author about details.
+
+
+Contact the Author:
+
+Schlomo Schapiro
+huji at schlomo dot schapiro dot org
+
+
+Version History:
+
+29.11.1999 -    Initial publishing.
+07.12.1999 -    V 1.1 : - Add /@, /HOME, /CLOSEON options
+12.12.1999 -    V 1.1 : - Moved to Delphi 5, the WebBrowser component is better
+                                   and some more stuff works (TAB).
+16.12.1999 -    v 1.2 : - Added URL support for /@ option
+		         - Added about:version feature
+25.5.2000 -      v 1.21:- Fixed bug in FORCEMAX option (didn't work well)

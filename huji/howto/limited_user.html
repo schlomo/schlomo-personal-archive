@@ -1,0 +1,85 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>HowTo - Limited Applications User</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1 align="center">How To create users with a limited set of
+applications&nbsp; </h1>
+This is an email I wrote on that subject. I tried twice to write a nice howto, but both times the
+editor crashed on me so it will stay like this:
+<pre>
+Date: Sun, 23 Jan 2000 21:43:28 +0200 (IST)
+Subject: limited user
+
+Hi Friends, 
+
+after I AGAIN wrote that HowTo and AGAIN the program crashed on me just
+as I was to press the Save button ( this time FP Express, not NS) and of
+course AGAIN my long text was GONE I am giving up. This how to will
+probably never be written by me, therefore I am sending you the essentials
+by email (if now also pine will crash on me I wil lprobably start to use
+mailx or simply telnet to localhost:25):
+
+1. The trick is to close NAL after using it to setup an alternative
+environment for the user. For this I created an application called
+Remove_NAL_Force that closes NAL.
+
+2. To set up a limted user create the user and a special application for
+this user. This application should do the following steps:
+- run some default application
+- create icons on the Windows desktop that point to other applications
+that user should be able to run (probably including the default
+application in case the user closes it)
+- do whatever else should be done to initialize the users working
+environment (such as place default files in defaul places, display some
+initial announcements etc,).
+After setting up this application make sure that it's icon ordering is
+less than 9999 (that of Remove_NAL_Force) and associate the special
+applictaion object and Remove_NAL_Force to the limited user as Force Run.
+
+That's it !
+
+PS: A more sophisticated and much better solution is the run NALDESK.EXE
+from NAL, close NAL and associate the required applications to the user
+and mark them to be shown on the Desktop. This is especially recommended
+if the user is to use existing applications and should simply be
+restricted from seeing all the standard applications associated with the
+workstation.
+
+For example I think I should move the Regist user to the NALDESK trick
+since now I am creating icons that use NALRUN32 to run the original
+application object (which is like scratching your nose from behind the
+head).
+
+PPS: I am setting up http://shum.cc.huji.ac.il/~schapiro/howto as HowTo
+dir for internal HUJI use only. That is why I won't put a link to it on my
+"official" home page, sine there I write for people who know our tree and
+how we set up things here.
+
+Schlomo
+
+PPS: Windows is simply and unstable operating system, I am convinced it
+simply from time to time crashes the active application to remind you that
+the other apps are getting bored and would also like to have some of your
+attention. (Or why is it that ALWAYS the app that I am working with  is
+crashing ?)
+
+-- 
+Schlomo Schapiro
+Computation Authority
+Hebrew University of Jerusalem
+
+Tel: ++972 / 2 / 65-85812
+email: huji at schlomo dot schapiro dot org
+
+
+</pre>
+
+</body>
+</html>

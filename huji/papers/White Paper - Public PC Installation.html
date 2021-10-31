@@ -1,0 +1,321 @@
+<HTML dir="ltr">
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>Schlomo Schapiro - White Paper - Public PC Installation</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1 align="center">Public PC Installation</h1>
+
+<h2 align="left">Situation:</h2>
+
+<p>We had a student information system based on VT-520's and a
+text mode browser running on Unix. Now we want to replace this
+with a more modern system since the web-based student information
+systems require a graphical browser. The browser has to be as
+maintenance-free as the terminals and be as much remote-manageable
+as the terminals.</p>
+
+<h2>Solution:</h2>
+
+<p>Since we have to use MS Internet Explorer (because of Hebrew),
+we decided to build the public PC on Windows NT. We secured the
+computer and installed a restricted web-browser (ResBrowser) that
+limits the user to browse only on the intranet. The computer
+boots directly into this browser and does not offer the usual
+Windows user interface, but runs the browser as full-screen kiosk
+application. Remote management is done using the standard Windows
+NT remote management tools (remote regedit, remote command,
+windows network). To ensure maximum protection we completely lock
+the computer via remote regedit. We also employ VNC for visual
+remote control.</p>
+
+<h2>Installation:</h2>
+
+<p>In order to achieve a maximum protected environment on NT we
+followed the following installation path:</p>
+
+<ol>
+    <li>Windows NT General Setup</li>
+    <li>Public User Setup</li>
+    <li>Task Manager</li>
+    <li>Ctrl-Alt-Del</li>
+    <li>Boot</li>
+    <li>Auto Logout</li>
+    <li>Windows NT Explorer</li>
+    <li>Internet Explorer (ResBrowser is an IE wrapper)</li>
+    <li>Scheduled Items &amp; Services</li>
+    <li>Registry</li>
+</ol>
+
+<h4>1. Windows NT General Setup</h4>
+
+<p>The NT 4 setup is rather simple. After installing NT on NTFS,
+the latest service pack, IE 5 and the latest Resource Kit we use
+C2Setup from the Resource Kit to close many security holes (like
+boot and file system). Nevertheless we found out that IE 5
+doesn't run well when it has only read rights on the system
+directories, so we gave the public user the usual Change rights (that
+come with the NT installation). Network setup is TCP/IP only with
+the Windows Network. We disable the Computer Browser service to
+prevent the public computer from participating in existing
+Windows networks, it is sufficient to know the computers IP
+address to access it from the network. I also had to increase the
+Registry Size after installing IE 5.</p>
+
+<h4>2. Public User Setup</h4>
+
+<p>Since we did not want the public browser to be logged on as
+Administrator we changed the Guest account into the public
+account (by renaming it and changing it's settings). The public
+user does not belong to any group (Except everyone which is built-in),
+has no password (important for the auto-login), no right to
+change the password and no timeouts (for password etc.). After
+creating the user in this manner we log on as public and set up
+the Internet Explorer and the screen saver (see above, logs out
+automatically). All further user setup can be done via regedit32
+from another computer.</p>
+
+<h4>3. Task Manager</h4>
+
+<p>Since we use ResBrowser as shell we have to leave some
+backdoor open for the administrator. This backdoor is the Task
+Manager (<strong>%SYSTEM32%\TASKMGR.EXE</strong>). We change the
+file security permissions for TASKMGR.EXE so that the user
+administrator has Full Access to it, while the user public has No
+Access to it. Thus when the computer is running in normal kiosk
+user mode (logged in as public) the user has no access to run the
+Task Manager and Ctrl-Shift-ESC as well as choosing &quot;Task
+Manager&quot; from the &quot;Windows NT Security&quot; screen
+have no effect. When the administrator logs onto the computer,
+the Task Manager is available and through it the administrator
+can run all relevant programs (like EXPLORER.EXE or MUSRMGR.EXE).</p>
+
+<h4>4. Ctrl-Alt-Del</h4>
+
+<p>I did not find a convenient way to completely disable Ctrl-Alt-Del.
+Nevertheless I think it's even beneficiary to leave it since
+through it a benevolent user can restart a stuck computer (don't
+forget, we talk Windows), while the possibilities to damage are
+more or less nil. The Change Password dialog pops up but I
+disabled the right to change the password so that this is mostly
+cosmetics. Logging Off logs of and then the computer
+automatically logs on again and returns to the opening screen of
+the public browser. Locking the Workstation is less pleasant, but
+everybody can unlock it by pressing the OK button since the
+public user has no password. The Task Manager can not be run (see
+above) and the last option, Shutdown, is even welcome since
+somebody can restart the computer if necessary</p>
+
+<h4>5. Boot</h4>
+
+<p>The boot is safe as far as NT and the BIOS are concerned. Of
+course we put a BIOS password and disabled boot from floppy. On
+the NT side we disabled the boot menu by setting the timeout to 0.
+Otherwise NT is already quite safe in terms of booting. From the
+Last Known Good menu users cannot do any harm.</p>
+
+<h4>6. Auto Logout</h4>
+
+<p>One of the interesting parts of the NT Resource Kit is it's <strong>WINEXIT.SCR</strong>
+screen saver. After a certain period of inactivity the current
+user is logged out automatically, after which the computer logs on
+automatically as the public user. Like this the computer returns
+to a fixed initial state after nobody has been using it for some
+time. This also solves the cases where a malicious user locked
+the Workstation and nobody thinks about the empty password (though
+usually people click on OK before actually reading the contents
+:-) or when IE got stuck or the browser crashed etc.</p>
+
+<h4>7. Windows NT Explorer</h4>
+
+<p>We created a user (public) so that on the computer exist two
+user (administrator and public). In normal operation mode the
+computer logs on automatically as public. To disable the explorer
+we change the Windows <strong>shell</strong> from explorer.exe to
+ResBrowser (see later under Registry). This completely disables
+the explorer and most of the Windows user interface, as well as
+shortcut keys like WinKey-M for &quot;Minimize all Windows&quot;.</p>
+
+<h4>8. Internet Explorer</h4>
+
+<p>We have to use Internet Explorer due to it's superior multi-language
+capabilities. We used a limited browser based on IE (<a
+href="../misc/index.html#resbrow">ResBrow</a>) that gives a very
+basic user interface and allows us to limit the sites accessible.
+With a registry patch we disabled the context menu (after
+enabling the language encoding Auto-Select feature) so that the
+user can only click on links to follow them. Since ResBrow is
+based on IE it makes use of IE's security settings. We set these
+settings in a very limiting and restricting way, disabling
+mostly everything (Especially downloads and password memory and
+caching and history) in the Internet and Intranet security zone.
+In these settings are many security risks, especially if you
+cannot disable active content (scripting). If you need cookies,
+you have to leave them enabled.</p>
+
+<h4>9. Scheduled Items &amp; Services</h4>
+
+<p>We use several services and scheduled items that do not come
+with a vanilla installation of NT:</p>
+
+<ul>
+    <li>Floppy Locker (Resource Kit):<br>
+        Simply install the Floppy Locker as described in the
+        Resource Kit</li>
+    <li>Scheduler (Resource Kit):<br>
+        Install the schedule service and use WinAT (even from a
+        remote computer) to set up the following services:<ol>
+            <li>every night: shutdown /l /r /t:0 /y /c<br>
+                shutdown is part of the Resource Kit. We do this
+                to have a full boot once a day.</li>
+            <li>every day: <a href="PublicCleanUp.bat.txt">PublicCleanUp.bat</a><br>
+                This batch cleans the disk from trash IE produces.
+                To keep the disk from filling up.</li>
+        </ol>
+    </li>
+    <li>Remote Console (Resource Kit)</li>
+    <li>Time Service (Resource Kit)<br>
+        Set it up to your favorite time provider (e.g. NTP)
+        according the the instructions in the Resource Kit.</li>
+    <li>VNC Server (<a href="http://www.uk.research.att.com/vnc/">Virtual
+        Network Computing</a>)<br>
+        Be sure to set up the default settings (password etc.). I
+        advice to disable the keyboard and mouse while the
+        computer is being remote managed.</li>
+</ul>
+
+<h4>10. Registry</h4>
+
+<p>The following patch under HKEY_USERS\ disables the IE settings
+that cannot be disabled by the Internet Settings Control Panel:</p>
+
+<blockquote>
+    <p><nobr><kbd>Key Name:</kbd><font color="#FF0000"><kbd>&lt;public
+    user id&gt;</kbd></font><kbd>\Software\Policies\Microsoft\Internet
+    Explorer\Restrictions<br>
+    Class Name: &lt;NO CLASS&gt;<br>
+    <br>
+    Value 0<br>
+    Name: NoBrowserClose<br>
+    Type: REG_DWORD<br>
+    Data: 0x1<br>
+    <br>
+    Value 1<br>
+    </kbd><font color="#FF0000"><kbd>Name: NoBrowserContextMenu<br>
+    Type: REG_DWORD<br>
+    Data: 0x1&gt;</kbd></font><kbd><br>
+    <br>
+    Value 2<br>
+    Name: NoBrowserOptions<br>
+    Type: REG_DWORD<br>
+    Data: 0x1<br>
+    <br>
+    Value 3<br>
+    Name: NoBrowserSaveAs<br>
+    Type: REG_DWORD<br>
+    Data: 0x1<br>
+    <br>
+    Value 4<br>
+    Name: NoFavorites<br>
+    Type: REG_DWORD<br>
+    Data: 0x1<br>
+    <br>
+    Value 5<br>
+    Name: NoFileNew<br>
+    Type: REG_DWORD<br>
+    Data: 0x1<br>
+    <br>
+    Value 6<br>
+    Name: NoFileOpen<br>
+    Type: REG_DWORD<br>
+    Data: 0x1<br>
+    <br>
+    Value 7<br>
+    Name: NoFindFiles<br>
+    Type: REG_DWORD<br>
+    Data: 0x1<br>
+    <br>
+    Value 8<br>
+    Name: NoSelectDownloadDir<br>
+    Type: REG_DWORD<br>
+    Data: 0x1<br>
+    <br>
+    Value 9<br>
+    Name: NoTheaterMode<br>
+    Type: REG_DWORD<br>
+    Data: 0x1<br>
+</nobr>    </kbd></p>
+</blockquote>
+
+<p>This patch under HKEY_LOCAL_MACHINE sets the Auto Logon and
+the shell:</p>
+
+<blockquote>
+    <p><nobr><kbd>Key Name: SOFTWARE\Microsoft\Windows
+    NT\CurrentVersion\Winlogon<br>
+    Class Name: &lt;NO CLASS&gt;<br>
+    <br>
+    Value 0<br>
+    Name: AutoAdminLogon<br>
+    Type: REG_SZ<br>
+    Data: 0<br>
+    <br>
+    Value 1<br>
+    Name: DefaultPassword<br>
+    Type: REG_SZ<br>
+    Data: <br>
+    <br>
+    Value 2<br>
+    Name: DefaultUserName<br>
+    Type: REG_SZ<br>
+    Data: public<br>
+    <br>
+    Value 3<br>
+    Name: DontDisplayLastUserName<br>
+    Type: REG_SZ<br>
+    Data: 0<br>
+    <br>
+    Value 4<br>
+    Name: Shell<br>
+    Type: REG_SZ<br>
+    Data: C:\Public\resbrow.exe /noclose /x ftp: /x telnet: /x
+    file: /x gopher: /i huji /forcemax /fet &quot;You are allowed
+    to browse in the Hebrew University only !&quot; /button
+    &quot;Mail|Press here to read eMail&quot; http://www.our.email.server
+    http://students.start.page<br>
+    <br>
+    Value 5<br>
+    Name: ShutdownWithoutLogon<br>
+    Type: REG_SZ<br>
+    Data: 0<br>
+</nobr>    </kbd></p>
+</blockquote>
+
+<p>The main problem I noticed with the auto login feature is that
+the system sets the user name to the last logged in user and
+disables the auto-login. I solved that problem by setting the
+permissions to the WinLogon subkey to Read Only for everybody (including
+Administrator !). I use this mechanism to lock the public PC via
+remote regedit so that nobody can log on as anything else except
+public, which is already severely limited.</p>
+
+<hr>
+
+<address>
+    Schlomo Schapiro<br>
+    Computation Authority<br>
+    Hebrew University of Jerusalem<br>
+    <br>
+    Tel: ++972 / 2 / 65-85812<br>
+    email: <a href="mailto:huji@schlomo.schapiro.org.REMOVE.THIS">huji at schlomo dot schapiro dot org<br>
+    <a href="http://www.huji.ac.il/unew/copyright.html">Copyright
+    &amp; Disclaimer</a> ©, 1999, The Hebrew University of
+    Jerusalem. All Rights Reserved. 
+</address>
+</body>
+</html>

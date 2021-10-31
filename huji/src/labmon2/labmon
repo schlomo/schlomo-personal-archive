@@ -1,0 +1,656 @@
+#!/usr/bin/perl -w
+use IO::Socket;
+use Net::Ping;
+use GD;
+use lib::Config;
+
+$outdir="/usr/local/httpd/labmon/details/";
+$confdir="etc/";
+$conffile=$confdir . "labmon.conf";
+$gfxoutdir=$outdir;
+$numgfxoutdir=$outdir;
+$remoteport=$numgfxoutdir;
+$urlgfx="/labmon/gfx/";
+$remoteport="finger(79)";
+$backlog="0";
+$logdir=$outdir."log/";
+$logfile="";
+$delay=0;
+
+if (@ARGV >0)
+# Do the command line parameters
+{
+}
+
+#unless (@ARGV > 0) { die "usage: $0 a.b.c.d-e document ..." }
+
+# Define statuses
+%STATUS = ( busy=>"0", free=>"1", offline=>"2" );
+# Create reverse lookup for %STATUS
+%REVSTATUS = () ;
+foreach (keys %STATUS) { $REVSTATUS{$STATUS{$_}}=$_ } ;
+
+#$pat_load = 'Load = (\d+%)';
+#$pat_uptime = '(\d+\s\d+:\d+:\d+\.\d+)';
+#$pat_user = 'User:\s(\w+)';
+if ($> == 0)
+# We are run as root
+{
+	$ping_protocol = "icmp";
+	$timeout = 0.2;
+}
+else
+# We are not run as root
+{
+	$ping_protocol = "tcp";
+	$timeout = 1;
+}
+
+&dodebug("Pinging with protocol $ping_protocol") if ($debug);
+
+$ping = Net::Ping->new($ping_protocol,$timeout);
+
+
+# Keep modification time of the configfile;
+$configmodtime = 0;
+
+# Exit gracefully on SIG_USR1
+$SIG{USR1} = sub { &dodebug("Caught SIG_USR1. Program will finish this cycle and terminate."); $running = 0 } ;
+$SIG{HUP} = sub { &dodebug("Caught SIG_HUP. Programm will re-read configuration before next cycle."); $configmodtime = 0 } ;
+# Main loop startes here. We keep running while $running
+$running = 1;
+
+while ($running)
+{
+# Do the initial configuration or re-read config if the config file changed
+my $modtime = (stat($conffile))[9];
+if ( $modtime != $configmodtime )
+{
+	&readconfig();
+	$configmodtime = $modtime;
+}
+
+&dodebug("Now is " . localtime(time)) if ($debug);	
+
+# Reset global counters
+foreach (keys %COUNTERS)
+{
+	$COUNTERS{$_} = 0;
+}
+
+
+# Remember when we started for profiling
+$laststart = time;
+
+&beforeallnets();
+
+foreach my $net (@NETS)
+{
+	
+my ($host,$startip,$stopip) = $NETS{$net} =~ m/(\d+\.\d+\.\d+\.)(\d+)-(\d+)/ ;
+&dodebug("Scanning network $NAMES{$net} ") if ($debug);
+
+my $ip = $startip - 1;
+$|=1;
+
+&beforeeachnet($net);
+
+while ($ip < $stopip)
+{
+	$ip++;
+	my $checkhost = "$host$ip";
+	my $remote;
+	my $output;
+	eval
+	{
+		local $SIG{ALRM} = sub { die "alarm clock\n" };
+		alarm 1+$timeout;
+		$remote = IO::Socket::INET->new( Proto     => "tcp",
+						PeerAddr  => $checkhost,
+						PeerPort  => $remoteport,
+						Timeout   => $timeout,
+						);
+		alarm 0;
+	} ;
+	if ($@)
+# Couldn't connect to the remote site, check why
+	{
+		die "Error in eval: $@\n"  unless ($@ eq "alarm clock\n") ;
+		$output = $PATTERNS{'offline'}."\n";
+		&dodebug("$checkhost: timeout after " . 1+$timeout ." secs !") if ($debug);
+	}
+	elsif (defined $remote)
+# No problem connecting to the remote port, let's read from it and process the data
+	{
+#	print "\n" unless ($lastip == $ip+1 and $lastip == 0 );
+		eval
+		{
+			local $SIG{ALRM} = sub { die "alarm clock\n" };
+			alarm 10*$timeout;
+			$remote->autoflush(1);
+			print $remote $BLANK;
+			$output = $PATTERNS{'busy'} ."\n";
+			while (<$remote>) 
+			{
+				$output .= $_ ;
+			}
+			alarm 0;
+		} ;
+		if ($@)
+# Couldn't connect to the remote site, check why
+		{
+			die "Error in eval: $@\n"  unless ($@ eq "alarm clock\n") ;
+			$output = $PATTERNS{'offline'} ."\n";
+			&dodebug("$checkhost: read timeout after " . 10*$timeout  . "secs !") if ($debug);
+		}
+		else
+		{
+			&dodebug("$checkhost is busy") if ($debug);
+		}
+		close $remote;
+	}
+	else 
+# actually I mean unless (defined $remote)
+# Finger doesn't answer, but if the host is alive it's available
+	{ 
+		if ($ping->ping($checkhost))
+		{
+			&dodebug("$checkhost is running and available !") if ($debug);
+			$output = $PATTERNS{'free'} ."\n";
+		}
+		else
+		{
+			&dodebug("$checkhost is unreachable !") if ($debug) ; 
+			$output = $PATTERNS{'offline'}."\n";
+		}
+	}
+# Processs all the info collected
+	&processhost($net,$checkhost,$output);
+} # while $ip < $stopip
+# Process the info for this network
+	&processnet($net);
+	&aftereachnet($net);
+} # foreach $net
+
+&afterallnets();
+
+# Set the refreshtime to the time it took us to pass all networks, add 5 secs for the case that it will take
+# longer next time
+$refreshtime = time - $laststart ;
+
+# If the time goes back, adjust for it
+if ($refreshtime<0)
+{
+	&dodebug("WARNING: clock went back !!! Resetting timers !.") if ($debug);
+	$refreshtime = 11;
+}
+
+# If $delay is longer than the time it took to pass all nets, sleep a little
+if ($delay > 0 and $refreshtime < $delay)
+{
+	&dodebug("Finished in $refreshtime seconds, sleeping till $delay seconds") if ($debug);
+	sleep ($delay - $refreshtime);
+	$refreshtime = $delay;
+}
+else
+{
+# Add 5 seconds to the refreshtime in case it will take longer next time
+# If $delay is longer than what it took, no need to add extra time;
+	$refreshtime += 5;
+}
+
+} #while ($running);
+
+# Final cleanup
+$ping->close();
+
+exit;
+
+sub processhost
+# Process the collected info for a host
+# parms:
+# $net		name of network
+# $host		ip of the checked host
+# $output	The output read from the remote host, prepended by our own comment (free,busy,offline)
+# This does the following:
+# - update all counters, extract info from the response
+# - create or update HTML page for this host in $outdir$net$host.html
+{
+	my $net = $_[0];
+	my $host = $_[1];
+	my $output = $_[2];
+	my %result = ();
+	foreach (@INFOS) { $result{$_} = "" };
+
+# Prepare HTML for this host
+	my $out ;
+	$out .= "<HTML $NAMES{'htmloptions'} >\n<HEAD>";
+	$out .= "<META HTTP-EQUIV=\"REFRESH\" CONTENT=\"$refreshtime\">\n";
+	$out .= "<TITLE> Net: $NAMES{$net} Host: $host</TITLE>\n";
+	$out .= $NAMES{'htmlhead'} . "\n";
+	$out .= "</HEAD>\n<BODY CLASS=\"HOSTRESULT\" $NAMES{'htmlbodyoptions'} >\n";
+	$out .= "<H1 CLASS=\"HOSTRESULT\">Details for $host in Network $NAMES{$net}</H1>\n";
+	$out .= "<DIV CLASS=\"UPDATED\">Last Updated: " . localtime(time) . "</DIV>\n";
+	$out .= "<TABLE CLASS=\"HOSTRESULT\">\n".
+		" <TR CLASS=\"HOSTRESULT\">\n".
+		"  <TH CLASS=\"HOSTRESULT\">$NAMES{'th_property'}</TH>\n".
+		"  <TH CLASS=\"HOSTRESULT\">$NAMES{'th_value'}</TH>\n".
+		" </TR>\n";
+	
+# Add infos from this host to net html (index.html), collected in $netout
+	$netout .= " <TR CLASS=\"HOSTRESULT\">\n";
+	$netout .= "  <TD CLASS=\"HOSTRESULT\"><A target=_new HREF=${host}.html>$host</A></TD>\n";
+
+	if ($output =~ m/$PATTERNS{'busy'}/)
+# This host is busy, let's extract some info from it
+	{
+
+# check for patterns 
+		foreach my $pattern (keys %PATTERNS)
+		{
+			if ($output =~ m/$PATTERNS{$pattern}/m)
+# Found this pattern in the output
+			{
+#				print "Checking pattern $pattern\n";
+				if (exists $COUNTERS{$pattern})
+				{ 
+					$NETDATA{$pattern}++ ; 
+					$COUNTERS{$pattern}++ ;
+#					print "Increased Counter $pattern\n";
+				} 
+				$result{$pattern} = $1 if (exists $result{$pattern});
+			}
+		}
+	
+		if ($debug)
+		{
+			my $debugstr = "  $host:";
+			foreach my $info (@INFOS)
+			{
+				$debugstr .= "\t$NAMES{$info} = $result{$info}";
+			}
+			&dodebug($debugstr) ;
+		}
+	
+		foreach my $info (@INFOS)
+		{
+# Add infos from this host to host html
+			$out .= "  <TR CLASS=\"HOSTRESULT\">\n".
+				"  <TD CLASS=\"HOSTRESULT\">$NAMES{$info}</TD>\n".
+				"  <TD CLASS=\"HOSTRESULT\">$result{$info}</TD>\n </TR>\n";
+		}
+
+		$netout .= "  <TD CLASS=\"NETRESULT\">$NAMES{'busy'}</TD>";
+		foreach my $info (@INFOS)
+		{
+# Add infos to network html
+			$netout .= "  <TD CLASS=\"NETRESULT\">$result{$info}</TD>";
+		}
+# Patch network picture (if defined)
+#		if (exists $PICPATCH{$net})
+#		{
+#			if (exists $NETMAP{$host})
+#			{
+#				$netpic->fill($NETMAP{$host}{'x'},$NETMAP{$host}{'y'},${'busy'});
+#			}
+#		}
+
+# Keep host info for later
+		$NETMAP{$host} = 'busy';
+	}
+	elsif ($output =~ m/$PATTERNS{'free'}/)
+# This host is free, tell it
+	{
+		$NETDATA{'free'}++ ; 
+		$COUNTERS{'free'}++ ;
+		$out .= " <TR CLASS=\"HOSTRESULT\">\n  <TD CLASS=\"HOSTRESULT\" COLSPAN=2>$NAMES{'free'}</TD>\n </TR>\n";
+		$netout .= "  <TD CLASS=\"NETRESULT\" colspan=" . (@INFOS+1) .">$NAMES{'free'}</TD>";
+# Patch network picture (if defined)
+#		if (exists $PICPATCH{$net})
+#		{
+#			if (exists $NETMAP{$host})
+#			{
+		$NETMAP{$host} = 'free';
+#				print "$netpic->fill($NETMAP{$host}{'x'},$NETMAP{$host}{'y'},${'free'});";
+#			}
+#		}
+	}
+	elsif ($output =~ m/$PATTERNS{'offline'}/)
+# This host is offline, tell it
+	{
+		$NETDATA{'offline'}++ ; 
+		$COUNTERS{'offline'}++ ;
+		$out .= " <TR CLASS=\"HOSTRESULT\">\n  <TD CLASS=\"HOSTRESULT\" COLSPAN=2>$NAMES{'offline'}</TD>\n </TR>\n";
+		$netout .= "  <TD CLASS=\"NETRESULT\" colspan=" . (@INFOS+1) .">$NAMES{'offline'}</TD>";
+# Patch network picture (if defined)
+#		if (exists $PICPATCH{$net})
+#		{
+#			if (exists $NETMAP{$host})
+#			{
+#				my @tmp = unpack("III",$NETMAP{$host});
+		$NETMAP{$host} = 'offline';
+#				print "$netpic->fill($NETMAP{$host}{'x'},$NETMAP{$host}{'y'},${'offline'});";
+#			}
+#		}
+	}
+	
+	$out .= "</TABLE>\n";
+	$output =~ s/^\w+\n//;
+	$output =~ s/\n/<BR>/g;
+	$output = "<I>No information available</I>" if ($output eq "");
+	$out .= "<DIV CLASS=\"OUTPUTTITLE\">\n$NAMES{'th_output'}\n</DIV>\n";
+	$out .= "<DIV CLASS=\"OUTPUT\">\n$output\n</DIV>\n";
+	$out .= "<ADDRESS>$NAMES{'htmldisclaimer'}</ADDRESS>\n";
+	$out .= "</BODY></HTML>\n";
+	open HTML,">$outdir$net/${host}.html" or die "Could not open $outdir$net/${host}.html for writing !:$@\n";
+	print HTML $out;
+	close HTML;
+
+	$netout .= "\n</TR>\n";
+} # processhost
+
+sub beforeeachnet
+# This sub is run before doing a network. It should lay the groundwork for things that happen during this
+# run over this network, e.g. create (or verify) the existance of directories, inititalize the map for this
+# network, inititalize the picture patch for this network
+# parms:
+# $net		name of network to deal with
+{
+	my $net = $_[0];
+# Reset counters for this network
+	$NETDATA = ();
+	foreach (keys %COUNTERS)
+	{
+		$NETDATA{$_} = 0;
+	}
+# Make sure output dirs exist	
+	mkdir "$outdir$net" unless (-d "$outdir$net");
+# Start index.html for this network subdir
+	$netout = "<HTML $NAMES{'htmloptions'} >\n";
+	$netout .= "<HEAD><TITLE> Net: $NAMES{$net}</TITLE>\n";
+	$netout .= "<META HTTP-EQUIV=\"REFRESH\" CONTENT=\"$refreshtime\">\n";
+	$netout .= $NAMES{'htmlhead'} . "\n" ;
+	$netout .= "</HEAD>\n<BODY CLASS=\"NETRESULT\" $NAMES{'htmlbodyoptions'} >\n";
+	$netout .= "<H1 CLASS=\"NETRESULT\">Details for Network $NAMES{$net}</H1>\n";
+	$netout .= "<DIV CLASS=\"UPDATED\">Last Updated: " . localtime(time) . "</DIV>\n";
+	$netout .= "<TABLE CLASS=\"NETRESULT\">\n".
+		   "<TR CLASS=\"NETRESULT\">\n".
+		   " <TH CLASS=\"NETRESULT\">$NAMES{'th_host'}</TH>\n".
+		   " <TH CLASS=\"NETRESULT\">$NAMES{'th_hoststatus'}</TH>\n";
+	foreach my $info (@INFOS)
+	{
+		$netout .= " <TH CLASS=\"NETRESULT\">$NAMES{$info}</TH>\n";
+	}
+	$netout .= "</TR>\n";
+
+# Reset net map for this net
+	%NETMAP = ();
+
+			
+} # beforeeachnet
+
+sub aftereachnet
+# This is run after going over a network. It should post-process stuff done in processhost, like
+# write out the net html
+# parms
+# $net		name of network to deal with
+{
+	my $net = $_[0];
+	$netout .= "</TABLE>\n";
+	
+#
+# Create picure map if specified
+# Initialize the IP translation map for this network (if exists)
+# Initialize the GD image object to be patched
+	if (exists $MAPS{$net} and exists $PICPATCH{$net})
+	{
+# Open source pic		
+		my $netpic = GD::Image->new($confdir . $PICPATCH{$net}) or die ("Error reading picture ${confdir}$PICPATCH{$net}: $!");
+		die ("Error reading picture ${confdir}$PICPATCH{$net}: $!") unless (defined $netpic);
+# Allocate colors in source pic
+		my %NETCOLOR = () ;
+		foreach my $color (keys %COLORS)
+		{
+			my ($r,$g,$b) = $COLORS{$color} =~ m/(..)(..)(..)/;
+			map { $_=hex($_) } ($r,$g,$b);
+			$NETCOLOR{$color} = $netpic->colorResolve($r,$g,$b);
+		}
+# Patch picture
+		open MAP,"<${confdir}$MAPS{$net}" or die "Could not open mapfile ${confdir}$MAPS{$net} for reading: $!\n";
+		while (<MAP>)
+		{
+			chomp;
+			next if (m/^\s*$/ or m/^\s*#/);
+			my ($IP,$x,$y) = m/^\s*(\d+\.\d+\.\d+\.\d+)\s+(\d+)\s+(\d+)/;
+# next if this IP is not amongst the scanned hosts
+			next unless (exists $NETMAP{$IP} and $NETMAP{$IP});
+			die ("Error reading map ${confdir}$MAPS{$net} : $_\n") unless ($IP and $x and $y);
+# Fill with color that matches the status of this IP
+#			$netpic->arc($x,$y,10,10,0,360,$NETCOLOR{$NETMAP{$IP}});
+			$netpic->fill($x,$y,$NETCOLOR{$NETMAP{$IP}});
+			if ($putipinpix)
+			{
+				($IP) = $IP =~ m/\.(\d+)$/;
+				$netpic->string(gdLargeFont,($x-5),($y-5),$IP,$NETCOLOR{'text'});
+			}
+		}
+		close MAP;
+
+		open PIC,">${gfxoutdir}$PICPATCH{$net}" or die "Could not open ${gfxoutdir}$PICPATCH{$net} for writing: $!\n";
+		binmode(PIC);
+		print PIC $netpic->png();
+		close(PIC);
+# Important ! De-allocate memory for picture !!!
+		undef $netpic;
+# Insert picture into HTML file
+		$netout .= "<IMG SRC=\"${urlgfx}$PICPATCH{$net}\" ALIGN=CENTER>\n";
+	}
+
+	$netout .= "<ADDRESS>$NAMES{'htmldisclaimer'}</ADDRESS>\n";
+	$netout .= "</BODY></HTML>\n";
+	open HTML,">$outdir$net/index.html" or die "Could not open $outdir$net/index.html for writing !:$!\n";
+	print HTML $netout;
+	close HTML;
+	
+# Create numerical PNG if given
+	if (exists $NUMPIC{$net})
+	{
+		my $free = $NETDATA{'free'} + $NETDATA{'offline'};
+		my $total = $free + $NETDATA{'busy'};
+# Calculate size of image
+		my $width = 12+((length($free) + length($total)) * gdLargeFont->width);
+		my $height = 2 + gdLargeFont->height;
+		my $numpic = GD::Image->new($width,$height);
+# Allocate colors in pic
+		my %NETCOLOR = () ;
+		foreach my $color (keys %COLORS)
+		{
+			my ($r,$g,$b) = $COLORS{$color} =~ m/(..)(..)(..)/;
+			map { $_=hex($_) } ($r,$g,$b);
+			$NETCOLOR{$color} = $numpic->colorResolve($r,$g,$b);
+		}
+		$numpic->fill(1,1,$NETCOLOR{'numback'});
+		$numpic->string(gdLargeFont,1,1,$free,$NETCOLOR{'numfree'});
+		$numpic->string(gdLargeFont,10+(length($free) * gdLargeFont->width),1,$total,$NETCOLOR{'numtotal'});
+		open PIC,">${numgfxoutdir}$NUMPIC{$net}" or die "Could not open ${numgfxoutdir}$NUMPIC{$net} for writing: $!\n";
+		binmode(PIC);
+		print PIC $numpic->png();
+		close(PIC);
+		undef $numpic ;
+	}
+		
+
+} # aftereachnet
+
+sub beforeallnets
+# This is run before going over the first net, it should initialize the main page and variables
+# This also initializes the logfile
+# no parms
+{
+	$mainout = "<HTML $NAMES{'htmloptions'} >\n";
+	$mainout .= "<HEAD><TITLE> LabMon Main Page</TITLE>\n";
+	$mainout .= "<META HTTP-EQUIV=\"REFRESH\" CONTENT=\"$refreshtime\">\n";
+	$mainout .= $NAMES{'htmlhead'} . "\n" ;
+	$mainout .= "</HEAD>\n<BODY  CLASS=\"MAINRESULT\" $NAMES{'htmlbodyoptions'} >\n";
+	$mainout .= "<H1 CLASS=\"TITLE\">$NAMES{'htmlmaintitle'}</H1>\n";
+	$mainout .= "<DIV CLASS=\"UPDATED\">Last Updated: " . localtime(time) . "</DIV>\n";
+	$mainout .= "<TABLE CLASS=\"MAINRESULT\">\n".
+		   " <TR CLASS=\"MAINRESULT\">\n".
+		   "  <TH CLASS=\"MAINRESULT\">$NAMES{'th_net'}</TH>\n" ;
+	foreach my $counter (@COUNTERS)
+	{
+		$mainout .= "  <TH CLASS=\"MAINRESULT\">$NAMES{$counter}</TH>\n";
+	}
+	$mainout .= "  <TH CLASS=\"MAINRESULT\">$NAMES{'th_total'}</TH>\n";
+	$mainout .= " </TR>\n";
+# If $backlog, make sure that $logfile contains the name of the logfile to be used for this session
+	if ($backlog)
+	{
+		@time = localtime;
+		$year = $time[5] + 1900;
+		$month = $time[4] + 1;
+		$mday = $time[3];
+		$oldlogfile = $logfile;
+		$logfile = "$year/$month/$mday";
+		if ($logfile ne $oldlogfile)
+# If the logfile should change, then we have to recheck all the dirs
+		{
+			unless (-d "$logdir$year")
+			{
+				mkdir "$logdir$year", 0755 or die "Could not create dir $logdir$year: $!\n";
+			}
+			unless (-d "$logdir$year/$month")
+			{
+				mkdir "$logdir$year/$month", 0755 or die "Could not create dir $logdir$year/$month: $!\n";
+			}
+		&dodebug("Now using logfile $logfile") if ($debug);
+		}
+	}
+	
+} # beforeallnets
+
+sub afterallnets
+# This is run after processing all the networks. It should write out the main page, collected in $mainout
+# no parms
+{
+	$mainout .= " <TR CLASS=\"MAINRESULT\">\n".
+		    "  <TD CLASS=\"MAINRESULT\">$NAMES{'th_total'}</TD>\n";
+	foreach my $counter (@COUNTERS)
+	{
+		$mainout .= "  <TD CLASS=\"MAINRESULT\">$COUNTERS{$counter}</TD>\n";
+	}
+	$mainout .= "  <TD CLASS=\"MAINRESULT\">" . ($COUNTERS{'offline'} + $COUNTERS{'busy'} + $COUNTERS{'free'}) . "</TD>\n";
+	$mainout .= "</TR>\n";
+
+	$mainout .= "</TABLE>\n";
+	$mainout .= "<ADDRESS>$NAMES{'htmldisclaimer'}</ADDRESS>\n";
+	$mainout .= "</BODY></HTML>\n";
+	open HTML,">${outdir}index.html" or die "Could not open ${outdir}index.html for writing !:$!\n";
+	print HTML $mainout;
+	close HTML;
+
+# Create lastmod.png PNG if requested
+	if ($lastmodpic)
+	{
+		my $text = localtime;
+# Calculate size of image
+		my $width = 2+(length($text) * gdLargeFont->width);
+		my $height = 2 + gdLargeFont->height;
+		my $numpic = GD::Image->new($width,$height);
+# Allocate colors in pic
+		my %NETCOLOR = () ;
+		foreach my $color (keys %COLORS)
+		{
+			my ($r,$g,$b) = $COLORS{$color} =~ m/(..)(..)(..)/;
+			map { $_=hex($_) } ($r,$g,$b);
+			$NETCOLOR{$color} = $numpic->colorResolve($r,$g,$b);
+		}
+		$numpic->fill(1,1,$NETCOLOR{'numback'});
+		$numpic->string(gdLargeFont,1,1,$text,$NETCOLOR{'numfree'});
+		open PIC,">${numgfxoutdir}lastmod.png" or die "Could not open ${numgfxoutdir}lastmod.png for writing: $!\n";
+		binmode(PIC);
+		print PIC $numpic->png();
+		close(PIC);
+		undef $numpic ;
+	}
+
+	
+	if ($debug)
+	{
+		my $debugstr="Global count:";
+		foreach (keys %NETDATA)
+		{
+			$debugstr .= "\t$_=$COUNTERS{$_}";
+		}
+		$debugstr .= "\t\ttotal hosts=" . ($COUNTERS{'free'} + $COUNTERS{'busy'} + $COUNTERS{'offline'});
+		&dodebug($debugstr);
+	}
+	
+	
+} # afterallnets
+
+sub processnet
+# Process the collected info for this network (basically only the counters)
+# parms
+# $net		Name of this network
+{
+	my $net = $_[0];
+
+# Adapt numbers if numcomps is given (real amount of computers)
+	if (exists $NUMCOMPS{$net})
+	{
+# Set # of offline comps to real number based on taking off all alive computers from the
+# GIVEN total amount of computers
+		my $realoffline = $NUMCOMPS{$net} - $NETDATA{'free'} - $NETDATA{'busy'};
+# Take the surplus amount of checked computers off the global counter
+		$COUNTERS{'offline'} = $COUNTERS{'offline'} - ($NETDATA{'offline'} -$realoffline) ; 
+		$NETDATA{'offline'} =  $realoffline;
+	}
+
+	$mainout .= " <TR CLASS=\"MAINRESULT\">\n".
+		    "  <TD CLASS=\"MAINRESULT\"><A CLASS=\"MAINRESULT\" HREF=\"$net\">$NAMES{$net}</A>";
+# If exists the picture map for this net, create a link to it
+	if (exists $MAPS{$net} and exists $PICPATCH{$net})
+	{
+		$mainout .= "\n<A CLASS=\"NETPICSMALL\" HREF=\"${urlgfx}$PICPATCH{$net}\"><IMG CLASS=\"NETPICSMALL\" WIDTH=50 SRC=\"${urlgfx}$PICPATCH{$net}\"></A>\n";
+	}
+	$mainout .= "</TD>\n";
+	foreach my $counter (@COUNTERS)
+	{
+		$mainout .= "  <TD CLASS=\"MAINRESULT\">$NETDATA{$counter}</TD>\n";
+	}
+	$mainout .= "  <TD CLASS=\"MAINRESULT\">" . ($NETDATA{'offline'} + $NETDATA{'busy'} + $NETDATA{'free'}) . "</TD>\n";
+	$mainout .= " </TR>\n";
+	
+# If $backlog is true, add data for this net to the backlog file for this day
+	if ($backlog)
+	{
+		@time = localtime;
+		open LOG,">>$logdir$logfile" or die "Could not open logfile ($logdir$logfile) for writing: $!\n";
+		print LOG "$time[2]:$time[1]:$time[0]\t$net\t$NETDATA{'busy'}\t$NETDATA{'free'}\t$NETDATA{'offline'}";
+		my %TEMP = %NETDATA;
+		delete $TEMP{'busy'};
+		delete $TEMP{'free'};
+		delete $TEMP{'offline'};
+		foreach $counter (keys %TEMP)
+		{
+			print LOG "\t$counter=$TEMP{$counter}";
+		}
+		undef %TEMP;
+		print LOG "\n";
+		close LOG;
+	}
+	
+	
+	if ($debug)
+	{
+		my $debugstr;
+		$debugstr = "Network count $net:";
+		foreach (@COUNTERS)
+		{
+			$debugstr .= "\t$_=$NETDATA{$_}";
+		}
+		$debugstr .= "\t\ttotal hosts=" . ($NETDATA{'free'} + $NETDATA{'busy'} + $NETDATA{'offline'});
+		&dodebug($debugstr);
+	}
+} # processnet

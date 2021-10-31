@@ -1,0 +1,42 @@
+For Your Information 1.0
+
+1998,1999 G. S. Schapiro
+
+FYI prints a text and offers two buttons: to cancel or run an external command.
+
+
+Command Line Paramameters:
+
+FYI "program" "line1" "line2" "line3" ...
+
+program is the program to run (can contain parameters)
+
+lineX is added to the text window.
+
+OR:
+
+FYI "program" /@TEXTFILE
+
+where program is the program to run
+
+TEXTFILE contains the text to display.
+
+Notes:
+
+The text is displayed left or right justified depending on the majority of
+letters in the first line. More Hebrew letters -> right justified; more English
+letters -> left justified.
+
+The scrollbar is added if there are more than 12 lines text. On systems with
+non-standart font-sizes, the scrollbar might not appear even though there are
+lines outside the window or the scrollbar might appear even though all lines
+fit into the window.
+
+The "program" parameter must be shorter than 255 characters
+
+If FYI crashes try to reduce the text passed to it by command line. Use /@
+option instead. This seems to be a Windows problem (Unix isn't so shaky about
+command line length :-).
+
+If you want to compile FYI yourself and don't have Jim Tyson's nwlib, replace
+alertBox, okBox etc with the apporpriate call to MessageBoxEx :-) 

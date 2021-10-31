@@ -1,0 +1,15 @@
+Jan Wolter:
+
+ - Think about changing "pipe" to be the default method.  Probably not worth
+   the incompatibility that would arise.
+
+ - Look into developing a "socket" method, in which we first try open a
+   socket connecting to the external authenticator, and only launch a new one
+   if the initial connection attempt fails.  This would avoid launching a
+   new authenticator for each hit.  Instead the authenticator would be a
+   persistant process that can hold open a connection to the database and
+   even do caching of recent authentications.
+
+ - Windows support.  Not something I'm likely to do, but a good idea.
+
+ - Merge with Satoh Fumiyasu's version 3.0.0beta3.

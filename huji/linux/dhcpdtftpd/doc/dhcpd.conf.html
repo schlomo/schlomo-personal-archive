@@ -1,0 +1,705 @@
+<HTML>
+<BODY>
+<PRE>
+<!-- Manpage converted by man2html 3.0.1 -->
+       dhcpd.conf - dhcpd configuration file
+
+
+</PRE>
+<H2>DESCRIPTION</H2><PRE>
+       The dhcpd.conf file contains configuration information for
+       <I>dhcpd,</I> the Internet Software Consortium DHCP Server.
+
+       The dhcpd.conf file is a free-form ASCII text  file.    It
+       is  parsed  by  the  recursive-descent  parser  built into
+       dhcpd.   The file may contain extra tabs and newlines  for
+       formatting purposes.  Keywords in the file are case-insen­
+       sitive.   Comments may be placed anywhere within the  file
+       (except  within quotes).   Comments begin with the # char­
+       acter and end at the end of the line.
+
+       The file essentially consists of  a  list  of  statements.
+       Statements fall into two broad categories - parameters and
+       declarations.
+
+       Parameter statements either say how to do something (e.g.,
+       how long a lease to offer), whether to do something (e.g.,
+       should dhcpd provide addresses  to  unknown  clients),  or
+       what  parameters to provide to the client (e.g., use gate­
+       way 220.177.244.7).
+
+       Declarations are used to describe the topology of the net­
+       work,  to  describe  clients  on  the  network, to provide
+       addresses that can be assigned to clients, or to  apply  a
+       group  of  parameters to a group of declarations.   In any
+       group of parameters and declarations, all parameters  must
+       be specified before any declarations which depend on those
+       parameters may be specified.
+
+       Declarations about network topology include the
+        <I>shared-network</I> and the <I>subnet</I> declarations.   If  clients
+       on  a  subnet  are to be assigned addresses dynamically, a
+       <I>range</I> declaration must appear within the  <I>subnet</I>  declara­
+       tion.   For clients with statically assigned addresses, or
+       for installations where only known clients will be served,
+       each such client must have a <I>host</I> declaration.   If param­
+       eters are to be applied to a group of  declarations  which
+       are  not related strictly on a per-subnet basis, the <I>group</I>
+       declaration can be used.
+
+       For every subnet which will be served, and for every  sub­
+       net  to  which the dhcp server is connected, there must be
+       one <I>subnet</I> declaration, which tells dhcpd how to recognize
+       that  an  address is on that subnet.  A <I>subnet</I> declaration
+       is required for each subnet even if no addresses  will  be
+       dynamically allocated on that subnet.
+
+       Some  installations  have  physical networks on which more
+       than one IP subnet operates.   For example, if there is  a
+       expands  to the point where it has more than 254 nodes, it
+       may be necessary to run two 8-bit subnets on the same eth­
+       ernet  until  such  time  as a new physical network can be
+       added.   In this case, the <I>subnet</I> declarations  for  these
+       two  networks may be enclosed in a <I>shared-network</I> declara­
+       tion.
+
+       Some sites may have departments which have clients on more
+       than  one  subnet,  but it may be desirable to offer those
+       clients a uniform set of parameters  which  are  different
+       than  what  would be offered to clients from other depart­
+       ments on the same subnet.    For  clients  which  will  be
+       declared explicitly with <I>host</I> declarations, these declara­
+       tions can be enclosed in a <I>group</I>  declaration  along  with
+       the  parameters which are common to that department.   For
+       clients whose  addresses  will  be  dynamically  assigned,
+       there  is  currently no way to group parameter assignments
+       other than by network topology.
+
+       When a client is to be booted,  its  boot  parameters  are
+       determined by first consulting that client's <I>host</I> declara­
+       tion (if any), then consulting the <I>group</I>  declaration  (if
+       any) which enclosed that <I>host</I> declaration, then consulting
+       the <I>subnet</I> declaration for the subnet on which the  client
+       is booting, then consulting the <I>shared-network</I> declaration
+       (if any) containing that subnet,  and  finally  consulting
+       the top-level parameters which may be specified outside of
+       any declaration.
+
+       When dhcpd tries to find a <I>host</I> declaration for a  client,
+       it  first  looks for a <I>host</I> declaration which has a <I>fixed-</I>
+       <I>address</I> parameter which matches the subnet or shared  net­
+       work  on which the client is booting.   If it doesn't find
+       any such entry, it then tries to find an entry  which  has
+       no  <I>fixed-address</I>  parameter.   If no such entry is found,
+       then dhcpd acts as if there is no entry in the  dhcpd.conf
+       file  for  that client, even if there is an entry for that
+       client on a different subnet or shared network.
+
+
+</PRE>
+<H2>EXAMPLES</H2><PRE>
+       A typical dhcpd.conf file will look something like this:
+
+       <I>global</I> <I>parameters...</I>
+
+       shared-network ISC-BIGGIE {
+         <I>shared-network-specific</I> <I>parameters...</I>
+         subnet 204.254.239.0 netmask 255.255.255.224 {
+           <I>subnet-specific</I> <I>parameters...</I>
+           range 204.254.239.10 204.254.239.30;
+         }
+         subnet 204.254.239.32 netmask 255.255.255.224 {
+           <I>subnet-specific</I> <I>parameters...</I>
+
+       }
+
+       subnet 204.254.239.64 netmask 255.255.255.224 {
+         <I>subnet-specific</I> <I>parameters...</I>
+         range 204.254.239.74 204.254.239.94;
+       }
+
+       group {
+         <I>group-specific</I> <I>parameters...</I>
+         host zappo.test.isc.org {
+           <I>host-specific</I> <I>parameters...</I>
+         }
+         host beppo.test.isc.org {
+           <I>host-specific</I> <I>parameters...</I>
+         }
+         host harpo.test.isc.org {
+           <I>host-specific</I> <I>parameters...</I>
+         }
+       }
+
+                                Figure 1
+
+
+       Notice that at the beginning of the file, there's a  place
+       for  global  parameters.    These might be things like the
+       organization's domain name,  the  addresses  of  the  name
+       servers  (if  they are common to the entire organization),
+       and so on.   So, for example:
+
+            option domain-name "isc.org";
+            option domain-name-servers ns1.isc.org, ns2.isc.org;
+
+                                Figure 2
+
+       As you can see in Figure 2, it's  legal  to  specify  host
+       addresses  in  parameters  as  domain names rather than as
+       numeric IP addresses.  If a  given  hostname  resolves  to
+       more  than  one  IP address (for example, if that host has
+       two ethernet interfaces), both addresses are  supplied  to
+       the client.
+
+       In  Figure  1,  you  can  see that both the shared-network
+       statement and the subnet statements can  have  parameters.
+       Let  us say that the shared network <I>ISC-BIGGIE</I> supports an
+       entire department -  perhaps  the  accounting  department.
+       If  accounting  has its own domain, then a shared-network-
+       specific parameter might be:
+
+            option domain-name "accounting.isc.org";
+
+       All subnet declarations appearing  in  the  shared-network
+       declaration  would then have the domain-name option set to
+       ters  as  shown in Figure 1 is that each subnet, of neces­
+       sity, has its own router.   So for the first  subnet,  for
+       example, there should be something like:
+
+            option routers 204.254.239.1;
+
+       Note  that  the  address  here  is  specified numerically.
+       This is not required - if you have a different domain name
+       for  each interface on your router, it's perfectly legiti­
+       mate to use the domain name for that interface instead  of
+       the numeric address.   However, in many cases there may be
+       only one domain name for all of a router's  IP  addresses,
+       and it would not be appropriate to use that name here.
+
+       In  Figure  1  there is also a <I>group</I> statement, which pro­
+       vides common parameters for a set of three hosts -  zappo,
+       beppo  and  harpo.  As you can see, these hosts are all in
+       the test.isc.org domain, so it  might  make  sense  for  a
+       group-specific  parameter to override the domain name sup­
+       plied to these hosts:
+
+            option domain-name "test.isc.org";
+
+       Also, given the domain they're in, these are probably test
+       machines.   If  we  wanted to test the DHCP leasing mecha­
+       nism, we might set the lease timeout somewhat shorter than
+       the default:
+
+            max-lease-time 120;
+            default-lease-time 120;
+
+       You may have noticed that while some parameters start with
+       the <I>option</I> keyword, some  do  not.    Parameters  starting
+       with the <I>option</I> keyword correspond to actual DHCP options,
+       while parameters that do not start with the option keyword
+       either control the behaviour of the DHCP server (e.g., how
+       long a lease dhcpd  will  give  out),  or  specify  client
+       parameters that are not optional in the DHCP protocol (for
+       example, server-name and filename).
+
+       In Figure  1,  each  host  had  <I>host-specific</I>  <I>parameters</I>.
+       These  could  include  such things as the <I>hostname</I> option,
+       the name of a file to upload (the <I>filename</I> <I>parameter)</I>  <I>and</I>
+       <I>the</I>  <I>address</I>  <I>of</I>  <I>the</I> <I>server</I> <I>from</I> <I>which</I> <I>to</I> <I>upload</I> <I>the</I> <I>file</I>
+       <I>(the</I> <I>next-server</I> parameter).   In general,  any  parameter
+       can  appear anywhere that parameters are allowed, and will
+       be applied according to the scope in which  the  parameter
+       appears.
+
+       Imagine  that  you  have a site with a lot of NCD X-Termi­
+       nals.   These terminals come in a variety of  models,  and
+       you  want to specify the boot files for each models.   One
+
+       group {
+         filename "Xncd19r";
+         next-server ncd-booter;
+
+         host ncd1 { hardware ethernet 0:c0:c3:49:2b:57; }
+         host ncd4 { hardware ethernet 0:c0:c3:80:fc:32; }
+         host ncd8 { hardware ethernet 0:c0:c3:22:46:81; }
+       }
+
+       group {
+         filename "Xncd19c";
+         next-server ncd-booter;
+
+         host ncd2 { hardware ethernet 0:c0:c3:88:2d:81; }
+         host ncd3 { hardware ethernet 0:c0:c3:00:14:11; }
+       }
+
+       group {
+         filename "XncdHMX";
+         next-server ncd-booter;
+
+         host ncd1 { hardware ethernet 0:c0:c3:11:90:23; }
+         host ncd4 { hardware ethernet 0:c0:c3:91:a7:8; }
+         host ncd8 { hardware ethernet 0:c0:c3:cc:a:8f; }
+       }
+
+
+</PRE>
+<H2>REFERENCE: DECLARATIONS</H2><PRE>
+       <B>The</B> <I>shared-network</I> <B>statement</B>
+
+        <B>shared-network</B> <I>name</I> <B>{</B>
+          [ <I>parameters</I> ]
+          [ <I>declarations</I> ]
+        <B>}</B>
+
+       The  <I>shared-network</I>  statement  is used to inform the DHCP
+       server that some IP subnets actually share the same physi­
+       cal  network.   Any  subnets in a shared network should be
+       declared within a  <I>shared-network</I>  statement.   Parameters
+       specified  in  the  <I>shared-network</I>  statement will be used
+       when booting clients on those  subnets  unless  parameters
+       provided  at  the  subnet or host level override them.  If
+       any subnet in a shared network has addresses available for
+       dynamic  allocation,  those addresses are collected into a
+       common pool  for  that  shared  network  and  assigned  to
+       clients  as  needed.   There  is  no way to distinguish on
+       which subnet of a shared network a client should boot.
+
+       <I>Name</I> should be the name of the shared network.   This name
+       is  used when printing debugging messages, so it should be
+       descriptive for the shared network.   The  name  may  have
+       the  syntax of a valid domain name (although it will never
+
+       <B>The</B> <I>subnet</I> <B>statement</B>
+
+        <B>subnet</B> <I>subnet-number</I> <B>netmask</B> <I>netmask</I> <B>{</B>
+          [ <I>parameters</I> ]
+          [ <I>declarations</I> ]
+        <B>}</B>
+
+       The  <I>subnet</I> statement is used to provide dhcpd with enough
+       information to tell whether or not an  IP  address  is  on
+       that  subnet.   It may also be used to provide subnet-spe­
+       cific parameters and to  specify  what  addresses  may  be
+       dynamically  allocated  to clients booting on that subnet.
+       Such addresses are specified using the <I>range</I>  declaration.
+
+       The  <I>subnet-number</I>  should be an IP address or domain name
+       which resolves to the subnet number of  the  subnet  being
+       described.   The <I>netmask</I> should be an IP address or domain
+       name which resolves to the subnet mask of the subnet being
+       described.   The subnet number, together with the netmask,
+       are sufficient to determine whether any given  IP  address
+       is on the specified subnet.
+
+       Although  a netmask must be given with every subnet decla­
+       ration, it is recommended that if there is any variance in
+       subnet  masks at a site, a subnet-mask option statement be
+       used in each subnet declaration to set the desired  subnet
+       mask, since any subnet-mask option statement will override
+       the subnet mask declared in the subnet statement.
+
+       <B>The</B> <I>range</I> <B>statement</B>
+
+        <B>range</B> [ <B>dynamic-bootp</B> ] <I>low-address</I> [ <I>high-address</I>]<B>;</B>
+
+       For any subnet on which addresses will be assigned dynami­
+       cally,  there  must be at least one <I>range</I> statement.   The
+       range statement gives the lowest and highest IP  addresses
+       in  a  range.   All IP addresses in the range should be in
+       the subnet in which the <I>range</I> statement is declared.   The
+       <I>dynamic-bootp</I>  flag  may  be specified if addresses in the
+       specified range  may  be  dynamically  assigned  to  BOOTP
+       clients  as well as DHCP clients.   When specifying a sin­
+       gle address, <I>high-address</I> can be omitted.
+
+       <B>The</B> <I>host</I> <B>statement</B>
+
+        <B>host</B> <I>hostname</I> {
+          [ <I>parameters</I> ]
+          [ <I>declarations</I> ]
+        <B>}</B>
+
+       There must be at least one <B>host</B> statement for every  BOOTP
+       unless booting is only enabled for known hosts.
+
+       If  it  is  desirable  to  be able to boot a DHCP or BOOTP
+       client on more than one subnet with fixed addresses,  more
+       than  one  address  may  be specified in the <I>fixed-address</I>
+       parameter, or more than one <B>host</B> statement may  be  speci­
+       fied.
+
+       If  client-specific  boot  parameters must change based on
+       the network to which the client is attached, then multiple
+       <B>host</B> statements should be used.
+
+       If  a client is to be booted using a fixed address if it's
+       possible, but should be allocated a dynamic address other­
+       wise,  then  a  <B>host</B> statement must be specified without a
+       <B>fixed-address</B> clause.  <I>hostname</I> should be a name identify­
+       ing  the  host.  If a <I>hostname</I> option is not specified for
+       the host, <I>hostname</I> is used.
+
+       <I>Host</I> declarations are matched  to  actual  DHCP  or  BOOTP
+       clients  by  matching  the  dhcp-client-identifier  option
+       specified in the <I>host</I> declaration to the one  supplied  by
+       the client, or, if the <I>host</I> declaration or the client does
+       not provide a dhcp-client-identifier option,  by  matching
+       the <I>hardware</I> parameter in the <I>host</I> declaration to the net­
+       work hardware address  supplied  by  the  client.    BOOTP
+       clients  do not normally provide a <I>dhcp-client-identifier</I>,
+       so the hardware address must be used for all clients  that
+       may boot using the BOOTP protocol.
+
+       <B>The</B> <I>group</I> <B>statement</B>
+
+        <B>group</B> {
+          [ <I>parameters</I> ]
+          [ <I>declarations</I> ]
+        <B>}</B>
+
+       The  group  statement  is used simply to apply one or more
+       parameters to a group of declarations.   It can be used to
+       group  hosts,  shared  networks,  subnets,  or  even other
+       groups.
+
+
+</PRE>
+<H2>REFERENCE: ALLOW and DENY</H2><PRE>
+       The <I>allow</I> and <I>deny</I> statements can be used to  control  the
+       behaviour of dhcpd to various sorts of requests.
+
+
+       <B>The</B> <I>unknown-clients</I> <B>keyword</B>
+
+        <B>allow</B> <B>unknown-clients;</B>
+        <B>deny</B> <B>unknown-clients;</B>
+
+       Dynamic  address  assignment to unknown clients is <B>allow</B>ed
+       by default.
+
+       <B>The</B> <I>bootp</I> <B>keyword</B>
+
+        <B>allow</B> <B>bootp;</B>
+        <B>deny</B> <B>bootp;</B>
+
+       The <B>bootp</B> flag is used to tell dhcpd  whether  or  not  to
+       respond  to  bootp  queries.  Bootp queries are <B>allow</B>ed by
+       default.
+
+       <B>The</B> <I>booting</I> <B>keyword</B>
+
+        <B>allow</B> <B>booting;</B>
+        <B>deny</B> <B>booting;</B>
+
+       The <B>booting</B> flag is used to tell dhcpd whether or  not  to
+       respond to queries from a particular client.  This keyword
+       only has meaning when it appears in  a  host  declaration.
+       By  default, booting is <B>allow</B>ed, but if it is disabled for
+       a particular client, then that client will not be able  to
+       get and address from the DHCP server.
+
+
+</PRE>
+<H2>REFERENCE: PARAMETERS</H2><PRE>
+       <B>The</B> <I>default-lease-time</I> <B>statement</B>
+
+        <B>default-lease-time</B> <I>time</I><B>;</B>
+
+       <I>Time</I> should be the length in seconds that will be assigned
+       to a lease if the client requesting the lease does not ask
+       for a specific expiration time.
+
+       <B>The</B> <I>max-lease-time</I> <B>statement</B>
+
+        <B>max-lease-time</B> <I>time</I><B>;</B>
+
+       <I>Time</I>  should be the maximum length in seconds that will be
+       assigned to a lease if the  client  requesting  the  lease
+       asks for a specific expiration time.
+
+       <B>The</B> <I>hardware</I> <B>statement</B>
+
+        <B>hardware</B> <I>hardware-type</I> <I>hardware-address</I><B>;</B>
+
+       In  order for a BOOTP client to be recognized, its network
+       hardware address must be declared using a <I>hardware</I>  clause
+       in  the <I>host</I> statement.  <I>hardware-type</I> must be the name of
+       a physical hardware interface type.   Currently, only  the
+       <B>ethernet</B>  and  <B>token-ring</B>  types  are recognized, although
+       support for a <B>fddi</B> hardware type (and others)  would  also
+       be  desirable.   The  <I>hardware-address</I>  should be a set of
+       DHCP clients.
+
+       <B>The</B> <I>filename</I> <B>statement</B>
+
+        <B>filename</B> <B>"</B><I>filename</I><B>";</B>
+
+       The <I>filename</I> statement can be used to specify the name  of
+       the  initial  boot file which is to be loaded by a client.
+       The <I>filename</I> should be a filename recognizable to whatever
+       file  transfer  protocol the client can be expected to use
+       to load the file.
+
+       <B>The</B> <I>server-name</I> <B>statement</B>
+
+        <B>server-name</B> <B>"</B><I>name</I><B>";</B>
+
+       The <I>server-name</I> statement can be used to inform the client
+       of the name of the server from which it is booting.   <I>Name</I>
+       should be the name that will be provided to the client.
+
+       <B>The</B> <I>next-server</I> <B>statement</B>
+
+        <B>next-server</B> <I>server-name</I><B>;</B>
+
+       The <I>next-server</I> statement is  used  to  specify  the  host
+       address  of  the  server  from which the initial boot file
+       (specified in the <I>filename</I> statement)  is  to  be  loaded.
+       <I>Server-name</I>  should  be  a  numeric IP address or a domain
+       name.   If no <I>next-server</I> parameter  applies  to  a  given
+       client, the DHCP server's IP address is used.
+
+       <B>The</B> <I>fixed-address</I> <B>statement</B>
+
+        <B>fixed-address</B> <I>address</I> [<B>,</B> <I>address</I> ... ]<B>;</B>
+
+       The  <I>fixed-address</I> statement is used to assign one or more
+       fixed IP addresses to a client.  It should only appear  in
+       a <I>host</I> declaration.  If more than one address is supplied,
+       then when the  client  boots,  it  will  be  assigned  the
+       address  which  corresponds  to the network on which it is
+       booting.  If none of the addresses  in  the  <I>fixed-address</I>
+       statement  are on the network on which the client is boot­
+       ing, that client will not match the <I>host</I> declaration  con­
+       taining that <I>fixed-address</I> statement.  Each <I>address</I> should
+       be either an IP address or a domain name which resolves to
+       one or more IP addresses.
+
+       <B>The</B> <I>dynamic-bootp-lease-cutoff</I> <B>statement</B>
+
+        <B>dynamic-bootp-lease-cutoff</B> <I>date</I><B>;</B>
+
+       The  <I>dynamic-bootp-lease-cutoff</I>  statement sets the ending
+       leases, and don't know that their leases could expire,  by
+       default  dhcpd  assignes  infinite  leases  to  all  BOOTP
+       clients.  However, it may make sense in some situations to
+       set  a cutoff date for all BOOTP leases - for example, the
+       end of a school term, or the time at night when a facility
+       is closed and all machines are required to be powered off.
+
+       <I>Date</I> should be the date on which all assigned BOOTP leases
+       will end.  The date is specified in the form:
+
+                         W YYYY/MM/DD HH:MM:SS
+
+       W  is  the day of the week expressed as a number from zero
+       (Sunday) to six (Saturday).  YYYY is the  year,  including
+       the century.  MM is the month expressed as a number from 1
+       to 12.  DD is the day of the month, counting from  1.   HH
+       is  the hour, from zero to 23.  MM is the minute and SS is
+       the second.  The time is always  in  Greenwich  Mean  Time
+       (GMT), not local time.
+
+       <B>The</B> <I>dynamic-bootp-lease-length</I> <B>statement</B>
+
+        <B>dynamic-bootp-lease-length</B> <I>length</I><B>;</B>
+
+       The  <I>dynamic-bootp-lease-length</I>  statement  is used to set
+       the  length  of  leases  dynamically  assigned  to   BOOTP
+       clients.    At  some  sites,  it may be possible to assume
+       that a lease is no longer in use if  its  holder  has  not
+       used  BOOTP  or  DHCP  to get its address within a certain
+       time period.   The period is specified in <I>length</I> as a num­
+       ber  of  seconds.   If a client reboots using BOOTP during
+       the timeout period, the lease duration is reset to <I>length</I>,
+       so  a BOOTP client that boots frequently enough will never
+       lose its lease.  Needless to say, this parameter should be
+       adjusted with extreme caution.
+
+       <B>The</B> <I>get-lease-hostnames</I> <B>statement</B>
+
+        <B>get-lease-hostnames</B> <I>flag</I><B>;</B>
+
+       The  <I>get-lease-hostnames</I>  statement  is used to tell dhcpd
+       whether or not to look up the domain name corresponding to
+       the  IP  address of each address in the lease pool and use
+       that address for the DHCP <I>hostname</I>  option.   If  <I>flag</I>  is
+       true,  then  this  lookup is done for all addresses in the
+       current scope.   By default,  or  if  <I>flag</I>  is  false,  no
+       lookups are done.
+
+       <B>The</B> <I>use-host-decl-names</I> <B>statement</B>
+
+        <B>use-host-decl-names</B> <I>flag</I><B>;</B>
+
+       the  name  provided  for the host declaration will be sup­
+       plied to the client as its hostname.   So, for example,
+
+           group {
+             use-host-decl-names on;
+
+             host joe {
+            hardware ethernet 08:00:2b:4c:29:32;
+            fixed-address joe.fugue.com;
+             }
+           }
+
+       is equivalent to
+
+             host joe {
+            hardware ethernet 08:00:2b:4c:29:32;
+            fixed-address joe.fugue.com;
+               option host-name "joe";
+             }
+
+       An <I>option</I> <I>host-name</I> statement within  a  host  declaration
+       will override the use of the name in the host declaration.
+
+       <B>The</B> <I>authoritative</I> <B>statement</B>
+
+        <B>authoritative;</B>
+
+        <B>not</B> <B>authoritative;</B>
+
+       The DHCP server will normally assume that  the  configura­
+       tion information about a given network segment is known to
+       be correct and is authoritative.   So if a client requests
+       an  IP  address on a given network segment that the server
+       knows is not valid  for  that  segment,  the  server  will
+       respond with a DHCPNAK message, causing the client to for­
+       get its IP address and try to get a new one.
+
+       If a DHCP server is being configured by  somebody  who  is
+       not  the  network administrator and who therefore does not
+       wish to assert this level of authority, then the statement
+       "not  authoritative"  should be written in the appropriate
+       scope in the configuration file.
+
+       Usually, writing <B>not</B> <B>authoritative;</B> at the  top  level  of
+       the file should be sufficient.   However, if a DHCP server
+       is to be set up so that it is aware of some  networks  for
+       which  it  is authoritative and some networks for which it
+       is not, it may be more appropriate to declare authority on
+       a per-network-segment basis.
+
+       Note that the most specific scope for which the concept of
+       authority makes any sense is the physical network  segment
+       It is not meaningful to specify that the server is author­
+       itative for some subnets within a shared network, but  not
+       authoritative  for others, nor is it meaningful to specify
+       that the server is authoritative for  some  host  declara­
+       tions and not others.
+
+       <B>The</B> <I>use-lease-addr-for-default-route</I> <B>statement</B>
+
+        <B>use-lease-addr-for-default-route</B> <I>flag</I><B>;</B>
+
+       If  the <I>use-lease-addr-for-default-route</I> parameter is true
+       in a given scope, then instead of sending the value speci­
+       fied  in  the routers option (or sending no value at all),
+       the IP address of the lease being assigned is sent to  the
+       client.   This supposedly causes Win95 machines to ARP for
+       all IP addresses, which can be helpful if your  router  is
+       configured for proxy ARP.
+
+       If  use-lease-addr-for-default-route  is  enabled  and  an
+       option routers statement are both in  scope,  the  routers
+       option  will be preferred.  The rationale for this is that
+       in situations where you want  to  use  this  feature,  you
+       probably  want  it enabled for a whole bunch of Windows 95
+       machines, and you want to override  it  for  a  few  other
+       machines.    Unfortunately,  if the opposite happens to be
+       true for you site, you are probably better off not  trying
+       to use this flag.
+
+       <B>The</B> <I>always-reply-rfc1048</I> <B>statement</B>
+
+        <B>always-reply-rfc1048</B> <I>flag</I><B>;</B>
+
+       Some  BOOTP clients expect RFC1048-style responses, but do
+       not follow RFC1048 when sending their requests.   You  can
+       tell  that  a  client  is having this problem if it is not
+       getting the options you have configured for it and if  you
+       see  in the server log the message "(non-rfc1048)" printed
+       with each BOOTREQUEST that is logged.
+
+       If you want to send rfc1048 options to such a client,  you
+       can  set  the <B>always-reply-rfc1048</B> option in that client's
+       host declaration, and the DHCP server will respond with an
+       RFC-1048-style  vendor  options  field.   This flag can be
+       set in any scope, and will affect all clients  covered  by
+       that scope.
+
+       <B>The</B> <I>server-identifier</I> <B>statement</B>
+
+        <B>server-identifier</B> <I>hostname</I><B>;</B>
+
+       The  server-identifier statement can be used to define the
+       value that is sent in the DHCP  Server  Identifier  option
+       clients served by a particular scope.
+
+       The  use  of the server-identifier statement is not recom­
+       mended - the only reason to use it is  to  force  a  value
+       other than the default value to be sent on occasions where
+       the default value would be incorrect.   The default  value
+       is  the first IP address associated with the physical net­
+       work interface on which the request arrived.
+
+       The usual case where the <I>server-identifier</I> statement needs
+       to  be sent is when a physical interface has more than one
+       IP address, and the one being sent by default isn't appro­
+       priate  for  some or all clients served by that interface.
+       Another common case is when an alias is  defined  for  the
+       purpose  of  having  a  consistent IP address for the DHCP
+       server, and it is desired that the  clients  use  this  IP
+       address when contacting the server.
+
+       Supplying a value for the dhcp-server-identifier option is
+       equivalent to using the server-identifier statement.
+
+
+</PRE>
+<H2>REFERENCE: OPTION STATEMENTS</H2><PRE>
+       DHCP  option  statements  are  documented  in  the   <B>dhcp-</B>
+       <B>options(5)</B> manual page.
+
+
+</PRE>
+<H2>SEE ALSO</H2><PRE>
+       <B>dhcpd.conf(5)</B>, <B>dhcpd.leases(5)</B>, RFC2132, RFC2131.
+
+
+</PRE>
+<H2>AUTHOR</H2><PRE>
+       <B>dhcpd(8)</B> was written by Ted Lemon &lt;mellon@vix.com&gt; under a
+       contract with Vixie Labs.   Funding for this  project  was
+       provided  by  the Internet Software Corporation.  Informa­
+       tion about the Internet Software Consortium can  be  found
+       at <B>http://www.isc.org/isc.</B>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+<HR>
+<ADDRESS>
+Man(1) output converted with
+<a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>
+</ADDRESS>
+</BODY>
+</HTML>

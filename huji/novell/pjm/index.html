@@ -1,0 +1,110 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>Schlomo Schapiro - Print Job Manager</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h2 align="center">Print Job Manager</h2>
+
+<p align="center"><img src="pjm_1.5.gif" width="553" height="676"></p>
+
+<p align="center"><font size="1">This picture is syntethic to
+show both context menus. I also garbled the network names to keep
+the privacy of the Hebrew University and it's users.</font></p>
+
+<p><font face="Times New Roman">I wrote two versions of this tool:</font></p>
+
+<ol>
+    <li><font face="Times New Roman">Version 1.5 uses the Novell
+        ActiveX Controls. This version has some more features (like
+        nicer graphics, hold/resume queues, change priority of
+        jobs in a queue) but needs the NWPQA.OCX ActiveX control
+        installed on your computer.</font></li>
+    <li><font face="Times New Roman">Version 1.4 does not need
+        any additional files (it uses the Novell API directly),
+        but has no graphics and can't hold/resume queues or
+        change the priority of jobs in a queue. Furthermore this
+        version does not read certain print queues on 4.10
+        servers or other queues (Novell's API is really messy
+        regarding queues). The only option v 1.4 has in addition
+        to v 1.5 is that it shows you wether you are Queue
+        Operator.<B>Note: It seems that this version does not
+	work well with Novell 5.1 servers. Use the ActiveX 
+	version instead.</B></font></li>
+</ol>
+
+<p>Both versions offer the same basic functionality:</p>
+
+<ul>
+    <li>Hold and Resume Print Jobs</li>
+    <li>Delete single Jobs or all Jobs in a Queue</li>
+    <li>Load/Save the configuration</li>
+    <li>Special Kiosk mode where the Load, Save and Add Queue
+        buttons are disabled (this is for class admins who
+        shouldn't get confused by too many options).</li>
+</ul>
+
+<h3><font face="Times New Roman">Downloads:</font></h3>
+
+<p><a href="pjm_1.5.zip"><font face="Times New Roman">Print Job
+Manager v 1.5</font></a><font face="Times New Roman"><br>
+In addition you need either </font><a
+href="ActiveX_Novell_Sept_99_ocx.exe"><font
+face="Times New Roman">Novell ActiveX controls with Installer (Release
+3)</font></a><font face="Times New Roman"> (5 MB)<br>
+or the </font><a href="NWPQA.ocx"><font face="Times New Roman">Novell
+Print Queue Administration Control v 1.4 (NWPQA.OCX, 206 K)</font></a><font
+face="Times New Roman"> and install it manually (see below).<br>
+These are the versions of the ActiveX that I used for
+development, you might check on </font><a
+href="http://www.novell.com"><font face="Times New Roman">www.novell.com</font></a><font
+face="Times New Roman"> for newer versions.</font></p>
+
+<p><a href="pjm_1.4.zip"><font face="Times New Roman">Print Job
+Manager v 1.4</font></a><font face="Times New Roman"> (no
+additional files needed)</font></p>
+
+<p><font face="Times New Roman"></font>&nbsp;</p>
+
+<h3>Manual installation of the ActiveX control:</h3>
+
+<p>1. Download the NWPQA.OCX file to your system (or system32)
+directory (e.g. C:\WINDOWS\SYSTEM or C:\WINNT\SYSTEM32)</p>
+
+<p>2. Open a DOS prompt in the directory where you put it and run
+the command <font face="Times New Roman"><code>REGSVR32 NWPQA.OCX</code></font>
+.(REGSVR32 should be on your system, in case it is not you can
+try <a href="REGSVR32.EXE">this one</a>, it is from my NT4). This
+will register the OCX with your Windows system.</p>
+
+<p>3. Copy the PJM.EXE you downloaded above to any location and
+run it.</p>
+
+<table border="0">
+    <tr>
+        <td align="center"><h2><a href="../"><img
+        src="../../image/left.jpg" alt="Main Page"
+        align="baseline" border="0" width="32" height="32"></a></h2>
+        </td>
+        <td align="center"><h2><a href="../">Novell Page</a></h2>
+        </td>
+    </tr>
+</table>
+
+<p><font face="Times New Roman"><code></code></font>&nbsp;</p>
+<hr>
+
+<address>
+    Send feedback, comments, ideas, whatever you want to tell me
+    to <a href="mailto:huji@schlomo.schapiro.org.REMOVE.THIS">Schlomo Schapiro</a><br>
+    <a href="http://www.huji.ac.il/unew/copyright.html">Copyright
+    &amp; Disclaimer</a> ©, 1999, The Hebrew University of
+    Jerusalem. All Rights Reserved.
+</address>
+</body>
+</html>

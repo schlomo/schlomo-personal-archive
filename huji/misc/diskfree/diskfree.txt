@@ -1,0 +1,19 @@
+DiskFree v 1.0
+6.10.1999 Schlomo Schapiro
+
+This little tool let's you run a program when the free space on a
+drive is lower than a settable limit (Or when there is
+"too much" free space). Usage is simple, look at the examples. The only
+trick is how to pass quotes into DiskFree.
+
+Examples:
+DiskFree H:\ 500000 fyi '"scc'" '"Your Home Directory (H:\) has less"' "'than 500 KByte free space.'" '"You should delete some files in H: to "' "'clear up more space. '" '" '" '"Press Continue for more information"'
+
+(sorry for the long line, but it's a one command line !!)
+Note the '"scc'" It's a single quote followed by a double quote. Only like 
+this you can pass params INTO DiskFree that also contains spaces.
+
+DiskFree C:\ -50 'some prog'
+
+This will start some prog if you have MORE THAN 50 bytes free on C:\ :-)
+

@@ -1,0 +1,64 @@
+If you want to use mod_auth_external.c with a hardcoded internal function,
+then you first have to hardcode an internal function (who wudda thunk?).
+Here are Tyler Addison's instructions for this:
+-----------------------------------------------------------------------------
+
+Step 1:
+	Edit "mod_auth_external.c"
+
+Step 2:
+	Uncomment the _HARDCODE_ #define.
+	Uncomment the line:
+              /* #include "your_function_here.c" */
+
+Step 3:
+	Replace "your_function_here.c" with the path/name of your function.
+
+Step 4:
+	Choose a <function name> for your function. ie: 'RADIUS' or 'SYBASE'
+	This will be used for telling mod_auth_external which hard coded
+	function you want to call.
+
+Step 5:
+	Go down to the large commented section in the middle of the
+	"mod_auth_external.c" and follow the instructions there.
+
+	Your function should start something like:
+
+
+	int
+	function_name (char *user_name,char *user_passwd,char *config_path) {
+
+
+	The function call in mod_auth_external.c should look something like:
+
+
+        if (strcmp(check_type,"<type>")==0) {
+            code = function_name(c->user,sent_pw,config_file);
+        }
+
+	** BIG NOTE TO PROGRAMMERS **
+	-DO NOT- use exit() or other such calls that will cause your
+	function to exit abnormally or dump core. It will take the entire 
+	httpd with it and display a message to your browser saying "no data". 
+	Use return() instead of exit().
+
+Step 6:
+	Save your work
+
+Step 7:
+	In the Apache source tree type:     make
+	You should then see make attempt to recompile mod_auth_external.c and
+	your function code.
+
+	** If you do not get a clean compile debug your code, and the
+	modifications you made to mod_auth_external.c, and try Step 7 again.
+	Continue until you get a clean compile.
+
+	** NOTE **
+	If you do not make any changes to mod_auth_external.c, but DO make
+	changes to your function code, you will need to at least 'touch'
+	mod_auth_external.c so 'make' knows you have modified the code.
+
+-----------------------------------------------------------------------------
+Continue by following the configuration instructions in the INSTALL file.

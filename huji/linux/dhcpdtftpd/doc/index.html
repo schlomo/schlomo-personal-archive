@@ -1,0 +1,225 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>DHCP & TFTP Server</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1 align="center">DHCP & TFTP Server</h1>
+
+<h2>Installation & Configuration</h2>
+<h3>1. Prepare the diskette</h3>
+<P>
+<OL>
+<LI>
+Install <A HREF="http://www.kernel.org/pub/linux/utils/boot/syslinux/">syslinux</a> on
+a computer (Windows or Linux)
+<LI>
+Format a 1.44" diskette (Linux: format in MS-DOS format, e.g. <CODE>mformat a:</CODE>)
+<LI>
+Install the syslinux bootloader on the diskette
+<LI>
+Unpack the <CODE>dhcpdtftpd-x.y.tar.gz</CODE> archive.
+<LI>
+Copy the contents of the directory named <CODE>disk</CODE> to the diskette with the syslinux
+bootloader.
+</OL>
+Now you have a bootable diskette with the DHCP & TFTP server on it.
+</P>
+<h3>2. Configure the server</h3>
+<P>
+You have to configure the <EM>network</EM> and the <EM>server</EM> settings on the diskette:
+<OL>
+<LI>
+<P>
+Configure the network interface(s) of the server by editing the <CODE>rc.net</CODE> file on the 
+diskette. If you are not familiar with Linux networking, just modify the included example according
+to your network setup. 
+</P>
+<P>
+If you have multiple network cards, repeat step 1 for each card. <B>It is important that a default route is set to <EM>every</EM> network 
+interface that serves DHCP requests</B>.
+</P>
+<P>
+The easiest way to find out which ethernet interface corresponds to a network card is to setup 
+all network cards and connect only one network card and ping the server. Connect the cable to all the
+cards one by one and mark the card where you get an answer to the ping.
+</P>
+<LI>
+<P>
+Configure the DNS server in <CODE>resolv.conf</CODE>. You can specify several <CODE>nameserver</CODE>
+lines for several DNS servers.
+</P>
+<LI>
+<P>
+Configure the DHCP server in <CODE>dhcpd.conf</CODE>. If you are not familiar with the 
+<A HREF="http://www.isc.org/products/DHCP">ISC DHCPD</A>, try to modify the example configuration.
+Read the <A HREF="dhcpd.conf.html">dhcpd.conf</A> manual, the <A HREF="dhcpd-options.html">
+dhcp-options</A> manual and the <A HREF="dhcpd.html">dhcpd</A> manual for more information.
+</P>
+<LI>
+<P>The TFTP server is enabled by default and has nothing to configure. Put files to be available 
+via TFTP into the <CODE>tftp</CODE> directory on the diskette.
+</P>
+<LI>
+<P>The Web management interface is enabled by default. The <CODE>htpasswd</CODE> file contains
+username/password pairs for the web-server. To disable access control delete this file. The
+included example defines a user "admin" with password "admin". You can use the standard NCSA htpasswd
+program to change the password or add users.
+</P>
+<P>
+To disable the web server (and web management) altogether put a <CODE>#</CODE> in front of the line starting
+with <CODE>mini-httpd</CODE> in <CODE>rc.boot</CODE>.
+</P>
+<LI>
+<P>
+<CODE>rc.boot</CODE> is the main startup file. It calls <CODE>rc.net</CODE> to setup the network
+and starts the DHCP and TFTP server. Normally there is no need to change anything in it, but you 
+can further adapt the server to your needs in this file (e.g. change the port the web server listens
+to, disable the interactive shell to prevent people from "playing" around, etc.).
+</OL>
+</P>
+<P>
+This is all configuration neccessary to get a running DHCP & TFTP server.
+</P>
+
+<h3>3. Debugging and Troubleshooting</h3>
+<P>
+By default the DHCP server is started on console 2 and the TFTP server on console 3. Press Alt and
+a F-Key (e.g. Alt+F2) to switch between consoles. On console 1 (the default console) an interactive
+shell is started. In this shell you can type commands to get information about the server configuration
+or troubleshoot it. For real debugging a basic knowledge of Linux networking is neccessary.
+</P>
+<UL>
+<LI>Check the network card setup with <CODE>ifconfig</CODE>. Make sure that the packet TX and RX counters
+are different from 0 (assuming the NIC was connected to something that makes traffick). <CODE>ifconfig</CODE>
+also shows the hardware configuration of the network cards (MAC address, interrupt, io ports ...), make sure
+that they seem reasonable and match the network cards' setup. Make sure that the IP address, netmask
+and broadcast address match your network. A typical <CODE>ifconfig</CODE> output looks like this:
+<PRE>
+eth0       Link encap:Ethernet  HWaddr 00:A0:C9:C6:5B:05  
+                      inet addr:111.11.1.111  Bcast:111.11.1.255  Mask:255.255.255.0
+                      UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+                      RX packets:3407251 errors:0 dropped:0 overruns:0 frame:0
+                      TX packets:99120 errors:0 dropped:0 overruns:0 carrier:0
+                      collisions:166 
+                      Interrupt:11 Base address:0x6100 
+
+eth1       Link encap:Ethernet  HWaddr 00:A0:C9:A0:F7:0B  
+                      inet addr:111.11.2.111  Bcast:111.11.2.255  Mask:255.255.255.0
+                      UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+                      RX packets:2810214 errors:0 dropped:0 overruns:0 frame:0
+                      TX packets:139755 errors:0 dropped:0 overruns:0 carrier:0
+                      collisions:41 
+                      Interrupt:10 Base address:0x6200
+</PRE>
+<LI>The routing can be checked with <CODE>route</CODE>. Use <CODE>route -n</CODE> to disable DNS lookups
+in case <CODE>route</CODE> takes long to produce results. Make sure that there is a default route to
+<B>each</B> network interface (for DHCP broadcasts). A typical <CODE>route</CODE> output looks like this:
+<PRE>
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+111.11.1.0      *               255.255.255.0   U     0      0      373 eth0
+111.11.2.0      *               255.255.255.0   U     0      0      223 eth1
+default         *               0.0.0.0         U     0      0     1379 eth0
+default         *               0.0.0.0         U     0      0     1087 eth1
+</PRE>
+<LI>
+The server answers echo requests so that you can ping it to check wether it is available.
+<LI>
+The following Unix commands are available on the server:
+<BR>
+<CODE>
+df,
+fromdos,
+mount,
+sed,
+todos,
+dhcpd,
+grep,
+ls,
+sh,
+tr,
+cat,
+echo,
+ifconfig,
+reboot,
+sleep,
+umount,
+cp,
+fold,
+mkfs,
+route,
+tftpd,
+uptime
+</CODE>
+</UL>
+
+
+<h2>The Workings</h2>
+<P>
+The diskette contains a Linux kernel and a small RAM disk with the neccessary programs. 
+The server runs completely in RAM, it does not need a HD (it won't touch any installed HD).
+The configuration files are read from the diskette during startup  and all files on the 
+diskette are exported via TFTP.
+</P>
+
+<h2>System Requirements</h2>
+<p><B>Hardware:</B> Minimum 586 with 16MB RAM, network cards (3C905, Intel100, some NE2000), 
+1.44" diskette drive. The server supports as many network cards as you can fit into the computer.
+</P>
+<P><B>Software:</B>Windows 9x/NT/2000 or Linux to make diskette, Webbrowser for management
+(optional). You will need <A HREF="http://www.kernel.org/pub/linux/utils/boot/syslinux/">
+syslinux</a> to create the boot disk. For remote booting with PXE I recommend <A HREF="http://www.bpbatch.org">
+BpBatch</A>, this is what I made this server for originally (If you don't need the TFTP server,
+you probably won't need BpBatch either).
+</P>
+
+<h2>The Server Programs</h2>
+<P><B>DHCP:</B> The DHCP server is the standard <A HREF="http://www.isc.org">ISC</A> DHCPD server 
+version 2.0pl5.
+</P>
+<P><B>TFTP:</B> The TFTP server is the extended TFTP server from <A HREF="http://www.bootix.de">
+bootix</A> as mentioned in the <A HREF="http://www.bpbatch.org/">Linux Mini-Howto on the BpBatch site</A>.
+</P>
+<P><B>HTTP:</B> The webserver is the <A HREF="http://www.acme.com/software/mini_httpd/">mini_httpd</a>
+from <A HREF="http://www.acme.com">ACME Labs</A>, a tiny HTTP server with CGI support. The web management
+is done via 4 shell scripts.
+</P>
+
+
+<h2>The Diskette</h2>
+<P>The diskette contains the following files:<BR>
+<B>bpbatch</B> BpBatch boot loader (not included)<BR>
+<B>bpbatch.P</B> BpBatch boot loader for extended TFTP (not included)<BR>
+<B>dhcpd.conf</B> DHCP Server configuration<BR>
+<B>initrd.gz</B> Linux RAMDISK<BR>
+<B>rc.boot</B> Startup script<BR>
+<B>resolv.conf</B> DNS configuration<BR>
+<B>htpasswd</B> Password for Web management<BR>
+<B>linux</B> Linux Kernel<BR>
+<B>rc.net</B> Network setup script<BR>
+<B>syslinux.cfg</B> Bootload configuration<BR>
+</P>
+<P>Only dhcpd.conf, rc.boot, rc.net, htpasswd, resolv.conf need to be changed by the user.
+The other files do not contain any changable settings.
+
+
+<h2>Sources</H2>
+<P>In the <CODE>src</CODE> directory of the distribution are the sources of some non-standard programs
+used. All other programs are taken from a vanilla SuSE 6.0 Linux. The kernel is a 2.0.38 kernel 
+
+<p align="right">Last updated: 02.05.2001</p>
+
+<hr>
+
+<address>
+    Send feedback, comments, ideas, whatever you want to tell me
+    to <a href="mailto:schapiro@huji.ac.il">Schlomo Schapiro</a><br>
+    <a href="http://www.huji.ac.il/unew/copyright.html">Copyright
+    &amp; Disclaimer</a> ©, 1999, The Hebrew University of
+    Jerusalem. All Rights Reserved. 
+</address>
+</body>
+</html>

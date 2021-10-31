@@ -1,0 +1,206 @@
+Init User v1.3
+
+1999,1998 Schlomo Schapiro
+
+Files:
+
+INITUSER.EXE            Main Program
+*.dpr,*.pas,*.dfm...    Delphi source files
+
+
+Abstract:
+
+Inituser displays information to users in a Novell NDS network and keeps track
+of the version of the information. Upon change of the information files it
+displays the information again. It also can run an external command once for
+each user.
+
+Supported File types:
+1. BitMap images (Windows BMP)
+2. Plain text files
+
+The file type is recognized automatically and independantly from the extension.
+(If you want to use an external program to print graphics, you have to use the
+bitmap default extension, see later under Printing).
+
+Working:
+
+INITUSER reads all it's options from the command line. It then reads existing
+configuration from the NDS. Then INITUSER runs the run once command (if this
+user didn't yet run it) and displays all files that changed since the user
+saw them the last time (or that the user never saw).
+
+InitUser uses a multi-value attribute in the NDS to store its data. All data
+appended by InitUser begins with "InitUser." so that existing data won't be
+compromised.
+
+The RunOnce option adds a string to the NDS
+("InitUser.RunOnce=date & time (command)") where date and time are the date and
+time of the moment when the command is run, command is the command run.
+
+For each file there is a line in the attribute. The line starts with
+"InitUser.File." to which the filename (with full path) as given on the command
+line is add together with a size & timestamp.
+Example: InitUser.File.C:\AUTOEXEC.BAT=250 342142344
+Meaning that the file c:\autoexec.bat was seen. It was then 250 byte big and it's
+DOS file date was 342142344 (in Delphis internal notation form).
+
+When run, InitUser creates for each file the timestamp and compares it to the
+one found in the NDS attribute. If they are different (or there was none in the
+attribute) then the file is "earmarked" for displaying. If they are the same,
+the file is discarded since the user already saw it.
+
+After thus processing all files, if there are files left to be displayed,
+InitUser switches to visual mode and opens a window that shows the file. The
+window stays on top to force the user to read the content of the file. On the
+window is a checked Checkbox "Show this next time I login" which the user has
+to clear if he doesn't want to see this file again till it changes.
+
+There are one or two buttons, depending on the number of files to display. If
+there is one file to display, only the Close button is displayed.
+If there are more, a Previous button and a Next/Close button are displayed. The
+user can move forward and backward between the files using those buttons. If he
+is at the last file, the Next button changes to Close and if the user presses it
+InitUser exits, updateing the NDS as needed (depending on wether the user
+cleared the Checkbox or not).
+
+
+Printing:
+
+The Print button is always displayed. Right Click opens the Print Setup dialog
+which changes the settings for the internal printing mechanism (The hint also
+explains this). Left Click prints the current information file.
+
+For all files InitUser first tries to use the default application set up in
+Windows to print. If this fails in such a way that InitUser notices, it uses
+an internal printing mechanism, which can produce less nice output.
+
+If the external application doesn't print or doesn't exist then files are
+printed according to the following:
+
+1. Bitmap files are stretched to fill most of the page and printed without
+anti-aliasing. This can produce rather ugly output. MSPaint is used when
+installed properly and prints much nicer.
+2. All other files are treated as text files and written to the printer like
+"copy <file> lpt1:" under DOS would do. If the file was displayed
+right-justified then InitUser tries to pad the printout to make it appear
+right-justified. This assumes that
+  a) the printer uses a non-proportional font
+  b) in the text there is no unneccessary whitespace before/after the text in
+     each line.
+
+If you want to have fancy printouts you can define a new file extension and
+and external application with the "print" operation defined and InitUser will
+use your definition.
+
+
+Command Line Parameters
+
+INITUSER uses commmand line parameters only:
+/?              Help - display help screen
+/v              Debug - Print verbose debugging info at each step
+/f              Force - display all textfiles without regard to timestamps
+/nt "text"      ShowNext - text to display near the checkbox
+/remove         Remove all InitUser settings from NDS
+/@ dir          display all files in dir (except hidden & system files)
+/@ file         display file
+/@ dir\pattern  display all files in dir matching pattern
+
+/nt defaults to "Show this the next time I login" with hotkey s
+Use & for underline (=hotkey) and _ for capital letter
+Example: "_thi&s is a text" displays as "This is a text" with an underlined s
+and the user can toggle the Checkbox by pressing Alt-s (or clicking on it)
+
+All other parameters are assumed to be files (unless /@ is given, then they
+are ignored)
+
+/remove is an exclusive option, e.g. you cannot use it together with any other
+option (except /v)
+
+Notes:
+
+The /remove option removes ALL strings beginning with "InitUser." from the
+attribute
+
+The help screen also shows what attribute InitUser is using.
+
+The users must have sufficient NDS rights to write to the NDS attribute. If they
+do not have the rights, InitUser will not be able to save the seen files. Use
+InitUser /? to see what attribute is used in your version of InitUser.
+
+The text files are either right or left justified (each file can have a different
+justification). Justification is automatically determined by the first non-empty
+line. IF it contains more English characters, the text will be left justified.
+Otherwise it will be right justified. (German language people should be aware not
+to put too many Umlaute into the first line)
+
+You should use a resolution of at least 800x600 to see the whole window since
+the window will fill a 640x480 almost completely. In case you don't see the
+buttons, ESC always exits.
+
+In many Windows installations the "print" operation of the notepad application
+is defined wrong. It is defined as 'notepad "%1" /p' and should
+be 'notepad /p "%1" ' instead to funtion properly. Notepad doesn't recognize
+Hebrew text as such and doesn't print it properly right-justified.
+
+I recommend using BMP pictures to display anything which doesn't show or print
+normally in text mode. This is the reason why I included the picture feature.
+Also good if you want to display some fancy logo for first-time logins.
+
+In some cases /@ X:\somedir doesn't work and display all files in C:\somedir
+(Win API bug, I think), use /@ X:\somedir\*.* instead.
+
+You can specify complex commands with parameters and %..% environment vars as
+run once command. To do so encapsulate everything in " ". An example to run a
+user-setup batch and display files in p:\msg\ is
+inituser /ro "%COMMAND% /cp:\usetup.bat" /@ p:\msg\*.*
+where %COMMAND% points to the right command.com or cmd.exe etc.
+
+More Examples:
+
+Display some general files and one group-specific file:
+inituser p:\msg\newuser.txt p:\msg\announce.txt L:\info.txt
+In the loin script you should map L: to someplace different for each group.
+
+Remove all the information stored in NDS by inituser:
+inituser /remove
+Or if you want to see what you remove:
+inituser /v /remove
+
+Check what is stored in the NDS for inituser (without doing anything else):
+inituser /v
+
+
+
+Copyright:
+
+InitUser is freeware. Only condition on distribution and further use or
+modification of the program or it's source code is that my name be mentioned
+in it and that the original idea was mine. The source is not freeware, contact
+the author about details.
+
+
+Contact the Author:
+
+Schlomo Schapiro
+huji at schlomo dot schapiro dot org
+
+Changes:
+v1.1 9.3.1999:   Added print button, but printout is left-justified only.
+                 Changed app title to Information
+v1.2 27.6.1999:  Made print button work as it should, including external app
+                 inclusion. Changed Icon to exclamation mark. Added BMP support.
+v1.3 22.11.1999: Made program work flawless (found bug in NWLIB).
+                 Removed the print setup dialog since it was useless.
+                 Minor improvements in the help dialog box.
+                 Put more detailed info in InitUser.RunOnce line in NDS.
+                 InitUser now hides TaskBar Icon (to prevent users from closing
+                 the program through it and to look better).
+
+
+To Do
+- Full internationalization (w/ external language file)
+- Speedup loading
+- Adapt to Novell 5 to support more NDS attributes
+- make the attribute a command line parameter, now it is hardcoded
+

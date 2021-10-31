@@ -1,0 +1,6 @@
+This is an external authentication module for use with mod_auth_external
+which supports secure authentication out of a Unix shadow password database.
+
+Detailed documentation is in the comments in the "pwauth.c" file.
+
+Author and Maintainer:  Jan Wolter <janc@cyberspace.org>

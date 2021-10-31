@@ -1,0 +1,16 @@
+KReboot v1.0
+
+This program is a 32 bit program to do a Ctrl-Alt-Del. It initiates a warm boot using
+the keyboard controller, just like pressing C-A-D. Be aware of the fact that this 
+program does not neccessarily write unwritten caches to the disk nor does it do any 
+other "clean-up". USE AT YOUR OWN RISK !!!
+
+TimerKreboot v1.0
+
+This is KReboot with a timer. Give a number (seconds) as option and TimerKReboot
+reboots the machine (just as KReboot) after said amount of seconds. Any further
+options are displayed in a message box PRIOR to starting the timer. This means
+that if a user won't close the message box, the timer won't start and the
+machine won't reboot !! (This is to be improved in further versions)
+
+Written by Schlomo Schapiro, huji at schlomo dot schapiro dot org

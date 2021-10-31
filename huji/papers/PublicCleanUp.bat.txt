@@ -1,0 +1,24 @@
+goto main
+
+PublicCleanUp.bat
+
+This script deletes all files that are created during normal use by the public web browser
+user on the Public PC.
+
+Since I like deltree and since NT didn't include it I copied it from a Win98 to the NT box.
+
+:main
+deltree /y c:\temp\.
+deltree /y c:\winnt\tempor~1\.
+cd c:\winnt\profiles\public
+c:
+deltree /y cookies\.
+deltree /y desktop\.
+deltree /y favori~1\.
+deltree /y history\.
+deltree /y personal\.
+deltree /y recent\.
+deltree /y sendto\.
+deltree /y startm~1\.
+deltree /y templa~1\.
+deltree /y locals~1\tempor~1\.

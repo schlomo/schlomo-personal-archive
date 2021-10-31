@@ -1,0 +1,124 @@
+Student Control Center v2.1
+
+1998,1999 G. S. Schapiro
+
+Files:
+
+SCC.EXE            Main Program
+SCC.INI            Optional Configuration File
+*.pas,*.dpr,*.dfm  Delphi source files (if included)
+
+
+Abstract:
+
+Student Control Center shows a wealth of information taken from NDS. In addition
+it allows to define 6 buttons that can execute any external program.
+
+
+Working:
+
+Upon initialization SCC reads all it's information from the NDS. The home
+directory is taken from the existing drive mappings and it's available space
+displayed. If no drive is mapped to the home directory, no information will be
+displayed. Then SCC.INI is read (if it exists) and the buttons are created
+accordingly.
+
+
+Config file format:
+SCC.INI consists of keyword=value pairs. The keywords are ButtonX.Caption,
+ButtonX.Hint, ButtonX.Exec and Title ; X can be between 1 and 6.
+Title sets the title of the program (and defaults to "Student Control Center").
+Info sets an info line at the bottom of the window.
+ButtonX.Caption appears on the face of the button (Use & to denote it's hotkey).
+ButtonX.Hint appears as hint for the button. Use \n for newline.
+ButtonX.Exec is executed upon click.
+Account.Unit sets a multiplication factor for Printing Account Balance. All
+   values from the NDS are multiplied by this factor before beeing displayed.
+
+
+Notes:
+
+SCC support NDS only. No bindery support is planned.
+
+External programs are executed in normal window state. Use shortcuts to start
+programs minimized.
+
+This program was designed for 1024x768 and looks really ugly on lower
+resolutions (especially 640x480)
+
+About the way the account balance is calculated: Two values are read from NDS:
+Account Balance and Low Balance Limit. If Balance < Limit SCC assumes that you
+count pages UP from 0 to the limit given in Low Balance Limit. In this case
+SCC can also calculate the number of pages already used by the user (by
+assuming that they start at 0). If, on the other hand, Balance > Limit, SCC
+assumes that you count DOWN from an unknown inititial number to 0. In this
+case SCC has no way of knowing how many pages the user has printed, it only
+tells you how many pages are left to print.
+If you don't want to use this automatic reckoning os SCC you can use the
+Account.Dir keyword to indicate the counting direction and wether it is till or
+from 0 (so that SCC can print totals) or not. The following options are
+possible:
+Account.Dir=up     Count up, low balance limit is UPPER limit
+Account.Dir=up0    Count up from zero, low balance limit is UPPER limit
+Account.Dir=down   Count down, low balance limit is LOWER limit
+Account.Dir.down0  Count down from zero, low balance limit is LOWER limit (and
+                   should be less than zero)
+If Account.Dir keyword is missing from SCC.INI, SCC uses it's internal guessing
+mechanism.
+
+All values are multiplied by the value given in Account.Unit (unless it is 1).
+
+If the Account.Unit keyword is missing from SCC.INI, SCC assumes it to be 1
+(meaning no conversion is done)
+
+All lines not beginning with one of the keywords are ignored. Thus you can
+insert comments as plain text (I advice you to mark them with # to help you
+see which lines are comment and which aren't)
+
+SCC uses the GetDiskFreeSpace function from the Win32 API. I could not verify
+wether it returns more than 2 GB on computers running win95 OSR2, winNT or win98.
+I checked it on Win98 and it still returns only 2GB (though I have more free
+space on my homedir). Seems to be a typical MS legacy problem. If anybody can
+tell me how to do this better, I'll be glad to implement it.
+
+Copyright:
+
+SCC is freeware. Only condition on distribution and further use or
+modification of the program or it's source code is that my name be mentioned
+in it and that the original idea was mine.
+
+
+Thanks To:
+
+Jim Tyson from Devont Software who wrote NWLib and donated a copy of it to me.
+http://www.devont.com
+sales@devont.com
+
+
+Version history:
+2.1     28.6.1999    Minor improvements: Added Account.Dir feature. Print
+                     negative balance in red. Some cleanup.
+2.0                  First release
+1.0                  Test release
+
+Contact the Author:
+
+Schlomo Schapiro
+huji at schlomo dot schapiro dot org
+
+
+Appendix: - Sample files:
+
+1: SCC.INI
+-----------------------------------
+Title=My very own Control Center
+Info=Use Close to exit this window.
+Account.Unit=0.01
+Account.Dir=up0
+Button1.Caption=&Notepad
+Button1.Hint=Open Notepad to edit a text file\nNotepad is the best editor available ever for all times to come :-)
+Button1.Exec=notepad
+Button3.Caption=&Password
+Button3.Hint=Change Password for Novell
+Button3.Exec=setpassw
+-----------------------------------

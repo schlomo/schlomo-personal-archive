@@ -1,0 +1,24 @@
+Fix registry
+
+This little batch checks wether the registry is valid (e.g. not broken). It
+does so by trying to read HKEY_CLASSES_ROOT\*. If this fails (for whatever
+reason), the registry is replaced by it's backup (system.da0 and user.da0).
+
+If this happens again on the very next boot (meaning that the registry is STILL
+broken), then regfix.bat installs a "safe" registry (from %WINDIR%\regbkup) that
+should have been created by some other means (e.g. PatchWS). It also copies the
+WIN.INI and SYSTEM.INI files since they reflect part of the registry.
+
+The script uses regedit2.exe, which should be regedit.exe from a Win98 
+installation. I do so because it is much better than the original Win95 
+regedit.exe since the latter one has much more problems reading the registry
+under DOS when regedit2 and win95 itself read it just fine. 
+
+This prevents the "Registry is damaged, do you want to restore it from the
+backup" screen from appearing since it does the same task (and more)
+
+Schlomo Schapiro huji at schlomo dot schapiro dot org
+
+1.0	14.12.1998 initial version
+2.0	10.11.1999 improved version: added second level backup
+

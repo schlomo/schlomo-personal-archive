@@ -1,0 +1,39 @@
+@echo off
+IF NOT .%REGFIX%==. exit
+regedit2 /e D:\TEMP\temp.reg HKEY_CLASSES_ROOT\*
+rem !!! PUT IN ABOVE LINE SOMETHING THAT EXISTS IN *YOUR* REGISTRY !!!
+if errorlevel 1 goto fixreg
+echo Registry OK.
+goto nofix
+
+:fixreg
+echo Registry broken. Running ScanDisk ...
+scandisk c: /custom /simpleui
+if exist c:\win95\regfix.dat goto special
+attrib c:\win95\system.da? -r -h -s
+attrib c:\win95\user.da? -r -h -s
+copy c:\win95\system.da0 c:\win95\system.dat /y >nul:
+copy c:\win95\user.da0 c:\win95\user.dat /y >nul:
+attrib c:\win95\system.da? +r +h +s
+attrib c:\win95\user.da? +r +h +s
+echo.>c:\win95\regfix.dat
+echo Registry was broken. Replaced Registry now with last backup
+goto end
+
+:special
+echo Special Treatment, reverting system to original configuration ...
+attrib c:\win95\system.da? -r -h -s
+attrib c:\win95\user.da? -r -h -s
+copy c:\win95\regbkup\system.dat c:\win95\system.dat /y >nul:
+copy c:\win95\regbkup\user.dat c:\win95\user.dat /y >nul:
+copy c:\win95\regbkup\system.ini c:\win95\system.ini /y >nul:
+copy c:\win95\regbkup\win.ini c:\win95\win.ini /y >nul:
+attrib c:\win95\system.da? +r +h +s
+attrib c:\win95\user.da? +r +h +s
+
+:nofix
+if exist c:\win95\regfix.dat del c:\win95\regfix.dat
+
+:end
+if exist D:\TEMP\temp.reg del D:\TEMP\temp.reg
+set regfix=done

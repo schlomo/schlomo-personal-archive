@@ -1,0 +1,33 @@
+#!/usr/bin/perl
+
+# Get the name of this program
+$prog= join ' ',$0,@ARGV;
+
+# Get the user name
+$user= <STDIN>;
+chomp $user;
+
+# Get the password name
+$pass= <STDIN>;
+chomp $pass;
+
+# Print them to the error_log file
+print STDERR "$prog: user='$user' pass='$pass'\n";
+
+# Dump the environment to the error_log file
+foreach $env (keys(%ENV))
+{
+	print STDERR "$prog: $env=$ENV{$env}\n";
+}
+
+# Accept the login if the user name matchs the password
+if ($user eq $pass)
+{
+	print STDERR "$prog: login matches password - Accepted\n";
+	exit 0;
+}
+else
+{
+	print STDERR "$prog: login doesn't match password - Rejected\n";
+	exit 1;
+}

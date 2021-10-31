@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+
+# Get the name of this program
+$prog= join ' ',$0,@ARGV;
+
+# Get the user name
+$user= <STDIN>;
+chomp $user;
+
+# Get the group name
+$groups= <STDIN>;
+chomp $groups;
+
+# Print them to the error_log file
+print STDERR "$prog: user='$user' groups='$groups'\n";
+
+# Dump the environment to the error_log file
+foreach $env (keys(%ENV))
+{
+	print STDERR "$prog: $env=$ENV{$env}\n";
+}
+
+# Loop through groups
+foreach $group (split ' ', $groups)
+{
+    # Accept the login if the user name matchs the group name
+    if ($user eq $group)
+    {
+	print STDERR "$prog: login name matches group name - Accepted\n";
+	exit 0;
+    }
+}
+
+print STDERR "$prog: login name doesn't match any group name - Rejected\n";
+exit 1;

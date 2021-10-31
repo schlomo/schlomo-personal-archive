@@ -1,0 +1,204 @@
+
+
+                   Mod_Auth_External version 2.1.11
+
+     Original Coder: Nathan Neulinger <nneul@umr.edu>
+Previous Maintainer: Tyler Allison <allison@nas.nasa.gov>
+ Current Maintainer: Jan Wolter <janc@cyberspace.org>
+         Developers:
+		    allison@nas.nasa.gov
+		    nneul@umr.edu
+	            br@ota.fr.socgen.com
+	            janc@cyberspace.org
+
+Version Confusion:
+------------------
+
+There has been a branch in the version tree of mod_auth_external.  It now
+looks like this:
+                                  Wolter
+                             ,--> 2.1.0 --> 2.1.1 --> ... --> 2.1.11
+   Neulinger  Allison       /
+   1.0.* ---> 2.0.0 ---> 2.0.1
+                 \
+                  \     Fumiyasu
+                   `--> 3.0.0beta1 --> 3.0.0beta2 --> 3.0.0beta3
+
+Tyler apparantly passed maintainance to both Satoh Fumiyasu and to me, and
+we only discovered each other's existence recently.  The two versions are
+each solid and secure, but have different features and are almost completely
+incompatible with each other.  I don't know what the status of Fumiyasu's
+version is - the web page recently disappeared.  I'd like to incorporate
+some of the good features he has into this version, but haven't had time to
+do that fully yet.
+
+Caution:
+--------
+
+Mod_Auth_External can be used to quickly construct secure, reliable
+authentication systems.  It can also be misused to quickly open gaping
+holes in your security.  Read the documentation, and use with caution.
+
+Introduction:
+-------------
+
+Mod_Auth_External is an Apache module used for authentication.  The Apache
+HTTP Daemon can be configured to require users to supply logins and passwords
+before accessing pages in some directories.  Authentication is the process
+of checking if the password given is correct for a user.  Apache has
+standard modules for authenticating out of several different kinds of
+databases.  Mod_Auth_External is a flexible tool for creating authentication
+systems based on other databases.
+
+Mod_Auth_External can be used in either of two somewhat divergent ways:
+
+ External Authentication:
+
+    When a user supplies a login and password, mod_auth_external runs a
+    program you write, passing it the login and password.  Your program
+    does whatever checking and logging it needs to, and then returns a
+    Accept/Reject flag to Apache.
+
+    This is slower than doing the authentication internally because it
+    has the overhead of launching an external program for each authentication.
+    However, there are at least two situations where it is very useful:
+
+      - Rapid prototyping.  The external authentication program can be
+        a shell script or perl program.  It can be written without knowing
+        much about building Apache modules.  Bugs in it will not endanger
+        the overall integrity of the Apache server.  Later, as performance
+	becomes more of an issue, you can write a custom Apache module to
+	do the job more efficiently (perhaps using the HARDCODE option below).
+
+      - Access restrictions.  There are situations where you do not want to
+        make your user database readable to the user-id that Apache runs
+        under.  In these cases the external authentication program can be
+        an suid program that has access to databases Apache cannot access.
+        For example, if you want to authentication out of a Unix shadow
+        password database, and you aren't foolish enough to run Apache
+        as root, a carefully written suid-root external authentication
+        program can do the job for you.
+
+    Pwauth, an external authentication program for securely authenticating
+    out of a Unix shadow password database is included in this distribution.
+
+ Hardcoded Authentication:
+
+    Some hooks have been inserted into mod_auth_external to make it easy
+    to replace the call to the external authentication program with a
+    call to a hardcoded internal authentication routine that you write.
+
+    This is sort of a half-way measure to just writing your own Apache
+    module from scratch, allowing you to use some of the logic from
+    mod_auth_external.
+
+    Example functions for authenticating out of a RADIUS server or Sybase
+    database are included in this distribution.
+
+Compatibility:
+--------------
+
+The current version of mod_auth_external is designed for use with Apache 1.3.
+We have no idea if it will still work with Apache 1.2.  Probably not.
+
+We also have no idea if this will work under Windows, but we rather doubt it.
+It's quite possible that it could be extended to Windows without that much
+difficulty by making more use of the existing Apache functions for running
+CGI's in that environment.  Let me know if you are interested in trying this.
+
+Mod_auth_external is now compatible with authenticators using the
+checkpassword interface.  See http://cr.yp.to/checkpwd.html for more
+information.
+
+Security Considerations:
+------------------------
+
+By default, mod_auth_external passes the user's login and password to the
+external authentication program by putting them in environment variables
+called USER and PASS.  We do not recommend using this default setting.
+
+On some versions of Unix (including SunOS and IRIX) any user logged onto
+the server can see these values by doing a "ps -e" command.  This would
+obviously be a problem if there are ever untrusted users on your server.
+Other versions of Unix (including Linux) restrict "ps -e" so you can only
+see your own processes, but this may still be a problem if untrusted people
+can put CGI programs on your server, since those may run as the same user
+as your authentication program does.  Some versions of Unix don't seem to
+have a "ps -e" command at all, but even then it is best to be careful. 
+Although the default "ps" command on Solaris won't display environment
+variables, the backwards compatible "/usr/ucb/ps" command does.  Are you
+sure there isn't and won't be an old-style ps command installed on your
+system? 
+
+However, mod_auth_external can easily be configured to pass the user's login
+and password to the external authentication program via a pipe.  If this is
+done (and it should be), then there should be no problems on any version of
+Unix.
+
+Use of this module requires development of an external authentication program
+or a hardcoded internal function.  There are more ways to screw up your
+security by doing those badly than we could possibly list.  See the file
+AUTHENTICATORS for more information on implementing authenticators.
+
+Example External Authentication Routines in this Distribution:
+--------------------------------------------------------------
+
+ test/
+    Several small dummy external authentication programs written in Perl.
+    This are meant only for testing of mod_auth_external.  They accept
+    any user whose password and login name are identical.  They write
+    lots of debugging info to the error_log file.
+
+    Author and Maintainer:  Jan Wolter <janc@cyberspace.org>
+
+ pwauth/
+    A setuid-root external authentication program for securely authenticating
+    out of most flavors of Unix shadow password files.  Supports some Unix
+    lastlog and faillog options.  This is very well tested.
+
+    Author and Maintainer:  Jan Wolter <janc@cyberspace.org>
+
+
+Example Hardcoded Internal Authentication Routines in this Distribution:
+------------------------------------------------------------------------
+
+ radius/
+    A Radius client using code from the publicly available Merit Radius
+    source code.
+
+    Author:  Tyler Allison <allison@nas.nasa.gov>
+    Unmaintained.
+
+ sybase/
+    A function that queries a sybase database and compares the passwords
+    for said user.
+
+    Author:  <br@ota.fr.socgen.com>
+    Unmaintained.
+
+If you have programs or functions you have coded and would like to add them
+to the examples collection on the next release please email them to
+janc@cyberspace.org and include a short description.
+
+Checkpassword Authenticators
+----------------------------
+
+There are various "checkpassword" compatible authenticators available on the
+net which can be used with mod_auth_external.  These authenticators are most
+commonly used with qmail pop servers but it is sometimes useful to be able
+to use the same authentication system for some web pages.  I've listed some
+of the ones that look useful for mod_auth_external, but I've tested only
+'checkpassword'.
+
+   checkpassword
+	http://cr.yp.to/checkpwd.html
+	Dan J. Bernstein <djb@cr.yp.to>
+
+	Authentication from a Unix shadow password file, similar to the
+	the pwauth program included in this distribution.
+
+   radcheckpassword
+	http://www.tic.ch/e-image/andrew/software/radcheckpassword/
+	Andrew Richards <andrew@tic.ch>
+
+	Radius authentication.

@@ -1,0 +1,95 @@
+UpdateWS
+
+Version 2 - Updated 8.9.1999
+
+Automatic Update System with version and group management.
+
+Files:
+updatews.exe            - The program
+updatews.pas            - Delphi source code
+updatews.txt            - You read it
+f:\login\wsgroup\       - The data files directory
+c:\updatews\config.sys   \
+c:\updatews\autoexec.bat |- Alternative startup files
+c:\updatews\logo.bmp     /
+
+This program is intended to automatically install workstations in computer
+labs with the help of non-push hard disk imaging programs like ghost, hdcp
+etc. UpdateWS gives some sort of push capacibilities to those programs. The
+assumption is that there are groups of identical workstations that use the
+SAME installation of Win95.
+
+Groups are denominated by letters A-Z (others might also work), Versions by
+numbers 1,2,3,... (letter, etc might also work).
+
+UpdateWS keeps the group & version of a workstation and its installation in
+two environment variables WSGROUP and VERSION that should be set in config.sys
+
+The "current" version is kept on the network in a datafile called
+UPDATEWS.DAT in f:\login\wsgroup\WSGROUP\updatews.dat, where WSGROUP is
+replaced by the appropriate group denominator. The datafile contains ONE line
+containing the current version.
+
+UpdateWS compares the version set in config.sys with the version on the
+network and if they are not identical copies config.sys, autoexec.bat from
+f:\login\wsgroup\WSGROUP\ to c:\ and logo.bmp from c:\updatews to c:\. After
+that it appends two settings to the new config.sys: SET WSGROUP=group and
+SET GETVERSION=version from network.
+
+It is up to the new config.sys and autoexec.bat to initiate the correct update
+proccess, like connect to the network and install a new installation from
+there.
+
+There is no error checking so that the administrator should always double
+check his/her work. A common mistake is, especially if using imaging software,
+to forget that each image contains its version and that you cannot change that
+"internal" version from outside. If you do so the effect will be an endless
+loop of installations. If for example image six has internal version 5, after
+installing image "6" the workstation thinks it is not "6" and UpdateWS
+reinstalls image "6" and so on ...
+
+I advice running UpdateWS from the registry's RunServices section (add
+f:\login\UpdateWS.exe to the following key:
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\RunServices )
+since, at least when using Novells Client32, at that stage network access to
+sys:login is already available.
+
+Alternatively one can use a ZEN application associated with the workstation
+object. My experience shows that when using CLient32 version 3.1 SP1 I had to
+specifically map f:=sys: in order for updatews (or any other program) to run
+from the network (I did this in the launch script of the updatews app). I also
+had to give the workstation (in my case the workstation group) specific rights
+to read from sys:\login (otherwise the map won't work), I did this by giving
+rights to the application and thus NDS gives the rights to all associated
+objects of the application.
+
+This system leads to asyncronous updates of the workstation (whenever UpdateWS
+is run by the workstation). Especially you cannot re-install the same image to
+the workstations (since UpdateWS compares version). To fix this problem there
+is also a "forced mode" where UpdateWS initiates the update process regardless
+of the current version of the workstation. To switch on the forced mode set
+the appropriate UPDATEWS.DAT file to read-only. As long as it is read-only,
+UpdateWS will reinstall the workstation, therefore I recommend to use this
+mode only to reinstall all computers at the same time and then revert
+UPDATEWS.DAT to read-write to return to normal mode.
+
+This program is freeware. If distributing please keep all the updatews.* files
+together. Feel free to adapt the source code to fit your environment or add
+additional features, as long as you note me for the original idea.
+
+Hints:
+You can use ANYTHING for WSGROUP and VERSION. All comparisons etc. are done as
+strings, not as numbers.
+
+It is most important that in all cases where you give updatews information, there
+be no extra spaces (like at the end of "SET VERSION=32 ", or in the data file
+updatews.dat) since extra spaces are NOT removed and will lead to loop updates.
+
+You can use the command line parameter FORCE (in capital letters) to force an
+update in addition to setting the data file to read only. This is if you want
+manually to update a specific workstation. It makes sense to have an
+application that runs updatews with the FORCE parameter to enable system admins
+to conviniently re-install a workstation.
+
+1998,1999, G. S. Schapiro
+

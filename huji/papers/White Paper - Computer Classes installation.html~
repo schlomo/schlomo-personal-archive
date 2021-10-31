@@ -1,0 +1,305 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title> Schlomo Schapiro - White Paper - Computer Classes installation</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1 align="center">White Paper - Computer Classes Installation</h1>
+
+<h2>Situation:</h2>
+
+<p>We have several student computer labs on the campus. The aim
+is to create a similar working environment for the strudents in
+all these labs, while keeping each lab unique in the software
+packages it offers. At the same time we want to manage all our
+PCs centrally from the network and control as much as possible
+from the network. In all classes exist groups of identical PCs (in
+terms of hardware) and each class is connected to a local file
+server. Currently all classes have their own, separate
+installation with local users, but do not make use of ZEN. The
+computers have to be protected against harm from students and
+against abuse and software installation. </p>
+
+<h2>Final Solution:</h2>
+
+<p>All classes present an identical working environment to the
+student (who have an account on a central student file server).
+In each class the existing local users continue to work with
+their previous accounts and environment they got used to. At the
+same time the students can log on in all the classes and use
+their own home dir and applications. All classes have a certain
+amount of &quot;standard applications&quot; (like Office and
+tools), while each class supplies in addition programs local to
+it (mostly specialized applications like MatLAB, Geology programs
+etc). </p>
+
+<p>The computers in the classes have an automatic installation
+system that allows the local admin to easily re-install a broken
+computer. Also many routine tasks are done automatically and
+centralized (like NAV update). Printer settings, applications and
+many aspects of the Workstation setup can be changed from the
+network. Also the computers protection can be set from the
+network, admins have only light protection while students enjoy
+more severe limitations of their activities. </p>
+
+<p>Application icons are managed in the network and user see
+different icons depending where they log on. </p>
+
+<p>All computers have a unique ID and are registered on the
+network to allow direct manipulation of a specific computer via
+the network. This includes Remote Control to help studens from a
+helpdesk team. </p>
+
+<h2>Detailed Solution:</h2>
+
+<h3>1. Programs &amp; Tools used:</h3>
+
+<dir>
+    <li>Novell ZENWorks </li>
+    <li>Fortres 4 </li>
+    <li>Symantec Ghost </li>
+    <li>UpdateWS &amp; AutoGhost2 (a set of applications to
+        automatically install computers from the network,
+        developed in-house) <h3>2. Computer setup:</h3>
+        <p>We work with ghost images to install the computers.
+        Therefore we first create a standard image for each group
+        of identical PC hardware. This installation contains
+        Windows 98, MS Office, IE5, NS4.08 and many tools (GS,
+        WinZIP, Acrobat, TclTK, NAV etc.). These images are
+        installed in each class and then customized to the local
+        class's demands (usually installation of further software
+        packages). </p>
+        <p>The next step is to connect the computers to the
+        network, both physically and logically. For each computer
+        we create a ZENWorks workstation object. The naming
+        convention we use is &quot;Computer Name&quot;+&quot;MAC-Address&quot;,
+        where the Computer-Name is related to the name of the
+        class the computer is in. Like this we have a naming
+        scheme which on one hand gives most information (what
+        computer in what class) while at the same time containing
+        only information which the computer itself has (This is
+        important for automatic registration of the computer
+        after installation). The computers WS objects are created
+        in a new sub-container for each class to have easy access
+        to a computer in a specific class and to allow for easy
+        grouping of computers. In most cases we create the new
+        containers under the existing containers for each class (that
+        contain users etc. from the previous setup). To make
+        computer installation easier we create the appropriate WS
+        objects before installing the computers so that when the
+        computers install and boot, they can connect to an
+        existing WS object (See later for the exact details). </p>
+        <p>Next we create Workstation groups for each class and
+        Workstation Policy packages. In the Policy package we
+        define the following parameters: </p>
+    </li>
+    <li>Printing </li>
+    <li>Login Restrictions </li>
+    <li>Start the NAL program on user login </li>
+    <li>(In some classes shutdown at class closing time) <p>We
+        also create an application (Called WS-Init) that is force
+        run by the workstation at the login screen. This
+        application runs all neccessary programs that we want to
+        have run at boot as well as sets the computers USER
+        policy to very strict restrictions (We do this instead of
+        using a User Policy Package for our students). This setup
+        allows us to have both the computer aspects and the user
+        aspects of Policy settings connected to the workstation,
+        what is what we want (since we want to protect the
+        workstation, not prevent the user from using Windows on a
+        non-class computer). </p>
+        <p>The computer's limitations are set as follows: </p>
+    </li>
+    <li>no write access on C: (Except by some specifically
+        allowed apps) (by Fortres) </li>
+    <li>disable most of Windows' user interface (Control Panel
+        &amp; CPLs, IE features, Desktop things, Drive C: in
+        explorer etc. (WS-Init by Policies). <p>We also create a
+        User Policy Package for admins that undoes most of WS-Init's
+        limitations so that admins get a fairly &quot;open&quot;
+        PC (except of course Fortes limitations). </p>
+        <p>Now we create application objects for all the programs
+        installed. We associate these applications with the
+        workstation group of each class (we create identical app
+        objects in each class container, though in principle it
+        ispossible to use a centralized application container and
+        keep there all the applications which are common to all
+        classes. This, however, puts high demands on the network
+        infrastructure and increases NDS traffic noticeably).
+        Some applications we associate with the user (both
+        students and previous user in each class via their
+        respective containers) so that they will have them
+        everywhere. The user-associated apps are programs that
+        depend on the user and not the computer, like &quot;Home
+        Directory&quot;, &quot;Logout&quot;, &quot;Change
+        Password&quot; (for the legacy users. Students use an
+        external system for password changes), and &quot;Account
+        Information&quot; to display some info and stats. All
+        applications that we create do their own setup (if
+        neccessary), like mapping of search drives, creation of
+        temporary files etc.. </p>
+        <p>The login script of each container involved (both the
+        student container and the class containers) is stripped
+        to a bare minimum of </p>
+    </li>
+    <li>setting ENV variables about almost everything </li>
+    <li>map search drives to sys:public and a dir with our utils </li>
+    <li>if exists, map drive to user's home directory <p>Summation
+        of Computer setup and some advantages: </p>
+    </li>
+    <li>All computer related settings are connected to the
+        computer and not to users (via workstation objects), this
+        includes running NAL and other programs and protecting
+        the computer. </li>
+    <li>All application specific settings are in the respective
+        application object </li>
+    <li>Full control of computers in the network, from assigning
+        apps or scheduled items to remote control. </li>
+    <li>Flexible computer protection: Strong for users and weak
+        for admins. <h3>3. Automatic installation</h3>
+        <p>The automatic installation procedure consists of
+        several parts: </p>
+    </li>
+    <li>A version control system that assigns each computer and
+        installation a unique computer group and version. Each
+        computer checks its version against the &quot;should be&quot;
+        version kept on the network and installs itself if
+        neccessary </li>
+    <li>A unique and &quot;native&quot; naming scheme for the
+        computers' workstation objects in NDS (Name+MAC Address).
+        After installation the computer patches itself on first
+        boot to point to the correct workstation object (easy
+        because we use MAC address and not some arbitrary or
+        changing data to build the name). </li>
+    <li>Simple to use bootdisks for image creation and
+        workstation installation to help local admins re-install
+        broken PCs and admins create new images. <p>All of the
+        above is implemented either using DOS batch scripts or,
+        if neccessary, small Pascal programs with source code
+        included. </p>
+        <h4>Detailed Description:</h4>
+        <p>We give each group of identical PCs a group name, e.g.
+        A. In this group we keep a version number, e.g. 4. This
+        information is stored locally on each PC in the CONFIG.SYS
+        file (in two ENV vars, WSGROUP &amp; VERSION). On the
+        network it sits in SYS:LOGIN\WSGROUP\%WSGROUP%\updatews.dat
+        of the local classroom file servers. A small program (UpdateWS)
+        run on boot before login (from either RunServices in the
+        registry, a force-run application or the Workstation
+        Policy Package) compares the two versions and if they do
+        not agree replaces config.sys and autoexec.bat on the
+        computer with a set that boots to the network in DOS and
+        restarts the computer. The computer then boots into the
+        network and uses the AutoGhost2 system to install the
+        correct image for this workstation (see below). </p>
+        <p>The AutoGhost2 system is a set of DOS batches that </p>
+    </li>
+    <li>recognizes the correct workstation group by IPX network
+        number and other means of identifying the computer (strings
+        in BIOS, nic drivers loaded etc) </li>
+    <li>maps drives to the correct locations of the updatews.dat
+        version file on the network and the location of the
+        actual ghost images </li>
+    <li>dumps the correct ghost image and reboots the computer or
+        shuts it down (depending on the computers hardware) <p>The
+        advantage of the AutoGhost2 system is that all the
+        intelligence to decide what to install is on the network
+        thus enabling us to use generic bootdisks for all
+        computers that do not ask any questions as to what to
+        install etc (unattended install). Also it allows us to
+        boot into the network in several unattended ways and make
+        use of the SAME system there: </p>
+    </li>
+    <li>UpdateWS initiated updateing/installation </li>
+    <li>Remote boot PROMS with Wake On LAN </li>
+    <li>local admin uses bootdisk to install computer. <p>A run-once
+        style set of DOS batches is run on a workstation on the
+        first boot after ghost image dump (calles PatchWS). This
+        loads the nic drivers, extracts from the output the MAC
+        address, unloads the nic drivers and patches the ZENWorks
+        workstation association object in the registry according
+        to the correct workstation name. Thus already on the
+        first boot the Workstation is completely set up and ready
+        to be used. </p>
+        <p>Especially together with Wake On Lan it is very easy
+        to automatically reinstall complete computer classes at
+        night, since the whole process is automatic and
+        asyncronous, meaning that one computer is completely
+        independant from the other computers (as opposed to
+        multicast installations where the operators have to make
+        sure that all computers are ready before beginning the
+        image dump). With modern network infrastructures and
+        compression also large classes can easily be installed
+        during one or two hours, even without multicast or
+        similar techniques. </p>
+        <h3>4. Network based management &amp; Conclusions</h3>
+        <p>After thus installing the computer labs and creating a
+        good basis for re-installing the system with the least
+        effort we try to manage and install the computers only
+        from the network. This includes: </p>
+    </li>
+    <li>Applying regular updates &amp; changes through NAL
+        application installations </li>
+    <li>Running oftenly changing things from the network </li>
+    <li>Easily changing computer setup and level of Windows
+        protection from the network, as well as other settings
+        like printer setup etc. </li>
+    <li>Installing temporary applications through NAL in %TEMP%
+        or run them from the network. </li>
+    <li>Using applications exclusively for almost everything that
+        we want to do to the computers. </li>
+    <li>Associating applications with sub-groups of workstations
+        to give some temporary app to some course in only part of
+        the class. </li>
+    <li>Shutting down computers, sending messages to users etc.
+        via application objects or scheduled items that execute
+        within the next 5 minutes (or whatever we set as refresh
+        time). </li>
+    <li>Enabling the helpdesk to view a user's desktop to help
+        solve problems whre they occur. <p>Since we use Fortres
+        to protect our computers and not some hardware based
+        solution that undoes all changes on reboot we can use all
+        of the above features since they rely on saving
+        information to the disk permanently (like NAL GUID stamps
+        of application versions, post-image-installation etc.).
+        For computers where Fortres is too limiting it is
+        possible to simply re-install the computers each night
+        and use only light or none Windows policy restrictions. </p>
+        <p>An added advantage of using application objects and of
+        moving most of the setup to the network is easy backup
+        through our central backup system and documentation
+        through the details in the application itself. </p>
+        <h2>Conclusion:</h2>
+        <p>With the above strategy of computer installation we on
+        one hand achieve a very well installed and managable
+        system using mostly standard tools (where they exist)
+        while keeping all possibilities for future changes and
+        improvements even from the network while on the other
+        hand we distribute the load over the network (by using
+        sub-containers) and including previous installations and
+        user setups in each location. The high amount of items
+        that are managable through the network helps us admins to
+        administrate our network more efficcient since many
+        problems we can now solve from remote and through the
+        network. </p>
+        <hr>
+        <address>
+            Schlomo Schapiro<br>
+            Computation Authority<br>
+            Hebrew University of Jerusalem<br>
+            <br>
+            Tel: ++972 / 2 / 65-85812<br>
+            email: <a mailto:"schapiro@cc.huji.ac.il">schapiro@cc.huji.ac.il</a><br>
+            <a href="http://www.huji.ac.il/unew/copyright.html">Copyright
+            &amp; Disclaimer</a> ©, 1999, The Hebrew University
+            of Jerusalem. All Rights Reserved. 
+        </address>
+    </li>
+</dir>
+</body>
+</html>

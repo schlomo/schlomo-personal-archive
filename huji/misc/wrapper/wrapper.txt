@@ -1,0 +1,289 @@
+Wrapper 1.1 & WrapperConf 1.1
+31.8.1999 Schlomo Schapiro
+
+Files:	WRAPPER.EXE	- The program
+	WRAPPERCONF.EXE	- Configuration Utility
+	WRAPPER.INF	- Installation Utility for Windows 9x
+
+Contents:
+
+1.	General Description
+2. 	Wrapper
+3. 	WrapperConf - The configuration editor
+4.	Hints,Tips,Background
+5.	License & Contact Information
+6.	Example data files
+
+------------------------------------------------------------------------
+1.	General Description
+
+Wrapper is a program whose only function is to run other programs. It is
+intended to use in HTML based menu systems to enable the execution of 
+programs on the computer where the HTML file is displayed.
+
+All Internet browsers have very strong protection against this very action,
+as usually it is not intended that the author of a HTML site can run local
+programs. This protection though prevents the use of HTML pages as menu
+system, which brings many advantages expecially in order to build complex
+menus that include extensive explanations. In adition a HTML based menu
+system is very independant from the client computers and with the help of
+wrapper a truly flexible menu system (that can work on any computer) can be
+designed.
+
+Wrapper has two modes of operation:
+1. Direct execution of supplied file
+2. Execution of actions defined in a data file
+
+In the 1st mode wrapper expects exactly one argument, the name of an
+executable file (meaning something that can be passed to WinExec from
+the Win32 API, e.g. EXE,COM,BAT,PIF ...). The extension of the file is
+in most cases NOT important. In this mode wrapper simply runs the 
+program and exits.
+
+In the 2nd mode wrapper also expects exactly one argument, the name of
+a wrapper data file. The action to be taken has to be specified in the
+data file. Optionally wrapper can download a file from the Internet prior
+to doing the action. Wrapper also performs variable and registry key
+substitution in the data file to enable flexible commands.
+
+After running the action the data file (= the file supplied on the command line)
+is deleted, if possible.
+
+wrapper can handle a list of application shortcuts and a list of restrictions
+(a list of command lines which are allowed to run). The application
+shortcuts come to solve the problem that on different computers there might
+be different programs installed to hande certain file types. Thus on one
+computer there could be a shortcut bmpedit=c:\windows\pbrush.exe while on
+an other computer the shortcut could be bmpedit=c:\somedir\someprog.exe
+(assuming that someprog.exe is a bitmap editor). Giving as action in the
+wrapper data file Application=bmpedit [some_bmp_file], on both computers
+this action would work, though different programs would be started.
+
+See the Wrapper section for details on restrictions.
+
+------------------------------------------------------------------------
+2.	Wrapper
+
+Installation:
+For Windows 9x right-click the WRAPPER.INF file and choose Install.
+This will install wrapper into the Windows directory and associate .WRP
+files with wrapper.
+For all other Windows versions or when the above doesn't work, copy
+WRAPPER.EXE to any directory in your path and associate it with .WRP
+files.
+Make sure that .WRP files are automatically downloaded (make sure the option
+"Confirm after download" is NOT checked in the file association details). If you
+use Netscape you might have to do special configuration in Netscape to achieve
+the same.
+
+Usage:
+WRAPPER.EXE <file>
+
+file is the name of a filename which can either be an executable or a wrapper
+data file. wrapper data files must begin with the line [Wrapper] and may not
+contain anything else in the first line (see examples below). The data file
+is in the format of Windows INI files, meaning it consists of Key=Value lines
+with the following keys recognized:
+
+Download=HTTP://address,local-file
+	downloads the specified file to the local-file
+
+Application=app-name [params...]
+	runs the specified app-name if found in application list. If not
+	wrapper will show an error message
+
+Shell=command,file
+	passes command and file to the ShellExecute function in the Win32 API
+	This tries to run the shell command on the file (See examples)
+
+Run=command line
+	Passes the command line to the WinExec function in the Win32 API
+	If restrictions are enabled, the COMPLETE command line has to appear
+	in the list of restrictions to be allowed to be run.
+
+The data file signature ([Wrapper]) has to be exactly like this as it is looked
+for exactly. All other keywords and parameters are not case sensitive.
+
+To download the file from the Internet wrapper can make use of a proxy server.
+The exact behaviour is determined by the proxy registry setting (see below for
+the key). If it is empty or non-existing, wrapper will try to use the Windows
+Internet Settings definition for http proxy. If the proxy key is set to the word
+"noproxy", then no proxy will be used. Otherwise a proxy-server can be specified
+in the proxy key (e.g. "proxy.network.com:8080").
+
+During the download a progress bar is displayed to the user to give some status
+information for long downloads.
+
+------------------------------------------------------------------------
+3.	WrapperConf
+
+WrapperConf is the configuration utility for wrapper. It provides a convinient
+way to edit the lists of application shortcuts and of restrictions without need
+for the user to know (mostly) anything about the workings of wrapper or of the
+registry.
+
+WrapperConf has a main working window with two tabs for applications and
+restrictions respectively. On the bottom there is an input mask with the
+possibility to browse for the programs to enter.
+
+The Data menu provides advanced saving and loading options to handle multiple
+sets of data or deal with settings from other computers.
+
+The Tools menu has some commonly used functions, as well as an option to set the
+proxy server for wrapper.
+
+To add an application shortcut:
+Go to the Applications tab, enter the name of the shortcut into the Name field,
+enter the program for the shortcut into the Value field (you can use Browse to
+look for a program in reach of your computer). Press "Add to List".
+
+To delete an application shortcut:
+Double-Click a shortcut in the list, it will be selected and also copied to the
+input mask at the bottom. Press "Delete from List" to delete.
+
+To load the content of the registry (= the active configuration for this
+computer), press "Load from Registry". This is done automatically when you start
+the program
+
+To save the (changed) content of the list, press "Save to Registry". This will
+save the current list to the computer for wrapper to use as configuration.
+
+To clear the list, choose Data->Clear. This only clears the list in the editor,
+not in the registry. Use "Save to Registry" to save an empty list to the
+registry.
+
+To add items from an external file into the list use Data->"Load From". This
+looks for a .reg style file with the right heading (meaning you couldn't load
+restrictions into the applications list like this, and vice versa). You can
+supply a file with many registry settings, "Load From" will load only the
+relevant section. For example you can load a dataset saved on another computer
+like this.
+
+Use Data>"Save As" to save the current list as a ready-to-import .reg file. This
+file can be merged on another computer into the registry to set wrapper to what
+you see now in the editor.
+
+
+
+Hints:
+------
+All WrapperConf's functionality is also included in regedit.exe, though not
+so convienient. In all cases where WrapperConf doesn't work or it is not clear
+to the user what is happening I advice to use regedit (or regedt32) to do all
+registry changes manually.
+
+To copy one value between the two lists double-click it in one list and then
+change to the other list and press "Add to List"
+
+------------------------------------------------------------------------
+4. 	Hints,Tips,Background
+
+Registry Keys:
+All settings are saved under the following key:
+HKEY_LOCAL_MACHINE\SOFTWARE\GeniSoft\wrapper
+
+The key contains at least a version stamp (which is not used in the program) and
+optionally the proxy value for the proxy configuration and optionally two sub-
+keys called applications and restrict. The applications key contains a list of
+string values that define the application shortcuts (the name of the value is the
+name of the shortcut, while the value is it's content). The restrict key contains
+a list of allowed command lines for the Run= command. The name of these values is
+unimportant and can be set to a convinient description of the command line.
+Sample registry tree:
+
+REGEDIT4
+
+[HKEY_LOCAL_MACHINE\Software\GeniSoft]
+
+[HKEY_LOCAL_MACHINE\Software\GeniSoft\wrapper]
+@="Version 1.0 20/07/1999"
+"proxy"="noproxy"
+
+[HKEY_LOCAL_MACHINE\Software\GeniSoft\wrapper\restrictions]
+"setdate"="command.com /cdate"
+
+[HKEY_LOCAL_MACHINE\Software\GeniSoft\wrapper\applications]
+"bmpedit"="c:\\windows\\pbrush.exe"
+"browser"="c:\\program files\\internet explorer\\iexplore.exe"
+
+
+If different proxy servers are set for different protocols, then there MUST be 
+a setting for HTTP since wrapper looks for http= in the Internet Setings. If
+there is no setting for HTTP then the program will not be able to download
+files from the Internet.
+
+The restricted program list is ONLY applied to the Run= parameter. Both
+Application= and Shell= parameters are NOT checked against the restricted
+applications list (since Windows is able to run them anyway, and also the
+user when he as access to the context menu).
+
+If the restrict key exists but has no string values in it, only pre-defined
+applications can be run. Also no files are downloaded. If they key exists and
+has values in it, only the programs listed in the values (NOT the value names)
+are allowed to be run by the Run= parameter. Downloads are enabled and Shell=
+and Application= are also enabled.
+
+The names of the string values in the applications list MUST be without spaces 
+and special chars in order for correct shortcut substitution to work.
+
+The wrapper file is parsed in the following order:
+1. Download=
+2. Application=
+3. Shell=
+4. Run=
+If wrapper finds something to do, it won't look for the other ones. This means
+that if you have an Application= parameter AND also a Run= parameter, the
+Run= parameter will be ignored in any case, even if the Application= parameter
+doesn't work or resolve to something etc.
+
+The wrapper data file MUST begin with [Wrapper] in the first line. This test
+is CASE-SENSITIVE !!!. All files which do not have this signature are passed to
+WinExec if no restrictions are set.
+
+The registry substitution happens before the environment substitution because some
+registry values tend to contain environment variables. In order to read the default
+value of a key, simply ommit the value like in "HKEY_CLASSES_ROOT\.txt\".
+
+------------------------------------------------------------------------
+5.	License & Contact Information
+
+wrapper, wrapperconf and all accompanying files are NOT public domain nor
+freeware. The author retains full copyright and no change to the programs 
+is permitted without permission from the author.
+
+It is specifically allowed to distribute the program package and make free
+use of it as long as all files mentioned at the top of this document are
+included unchanged as well as a curtesy note about the author. No fees
+whatsoever may be taken by 3rd persons for this program !
+
+Contacting the author:
+Schlomo Schapiro
+huji at schlomo dot schapiro dot org
+
+------------------------------------------------------------------------
+6.	Example Data Files
+
+____________________________________
+[Wrapper]
+Application=notepad
+------------------------------------
+This simply starts notepad, assuming that the application shortcut notepad is
+defined and pointing to notepad
+
+____________________________________
+[Wrapper]
+Download=http://your.server.net/some/form.txt,%TEMP%\form.txt
+Shell=open,%TEMP%\form.txt
+------------------------------------
+This would download the specified form.txt from a web server and open it for
+editing on the local machine. Very good to provide forms to be filled out,
+printed and handed in by the user.
+
+____________________________________
+[Wrapper]
+run=fyi.exe " " "Your current Windows Proxy Settings:" "?HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ProxyServer?" "Your COMSPEC is %COMSPEC%" "Your DOS path is:" "%PATH%"
+------------------------------------
+This shows the proxy settings and some env variables. fyi.exe is another program
+I wrote to display information given on the command line. This of course only
+works if no restrictions are set. Note that all the command is ONE line given to
+Run=.

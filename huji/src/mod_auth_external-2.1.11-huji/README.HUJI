@@ -1,0 +1,50 @@
+mod_auth_external with HUJI addon
+
+Read README & README.HARDCODE now !
+
+This is the full distribution of mod_auth_external-2.1.11 as found on
+modules.apache.org. I just added the support for the HUJI authentication.
+
+This modules has a builtin HARDCODED (see README for more info) authentication
+method to authenticate against Yehavi Bourvine's ID & 4-digit-code system for
+HUJI staff & students (see example below).
+
+Hacked by Schlomo Schapiro, May 2001.
+schapiro@huji.ac.il
+
+Notes:
+
+The udp_client.c is the unchanged version I got from Yehavi. Replacing it and 
+recompiling should be no problem once Yehavi will make a new version.
+
+I wrote a wrapper program called auth_udp_client.c which calls Yehavi's
+udp_client.c with the proper parameters and also evaluates the result, e.g.
+wether the person belongs to staff or students and is thus allowed to 
+authenticate. 
+
+Vaild paramters:
+staff - only staff can authenticate (title=0 in Yehavi's reply)
+student - only students can authenticate (title>0 in Yehavi's reply)
+all - everybody can authenticate
+
+Example:
+Put somewhere in your (virtual) server configuration:
+	AddExternalAuth huji_staff HUJI:staff
+	SetExternalAuthMethod huji_staff function	
+	AddExternalAuth huji_student HUJI:student
+	SetExternalAuthMethod huji_student function	
+	AddExternalAuth huji_all HUJI:all
+	SetExternalAuthMethod huji_all function	
+
+And then you can use the 3 defined authentication methods in any directory or 
+location or .htaccess like this:
+	AuthType Basic
+	AuthName "HUJI Staff only"
+	AuthExternal huji_staff
+	require valid-user
+
+That's it.
+
+When testing, don't forget to ask Yehavi to add your machine to the hosts that 
+can use his service and that after 3 wrong passwords the specific ID will be
+blocked for half an hour and each try starts the half hour again.

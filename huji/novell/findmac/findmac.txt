@@ -1,0 +1,19 @@
+FindMAC v1.0
+
+Extracts the node address from ODI driver output
+Usage: ODIDRIVER.COM | FindMAC
+or     ODIDRIVER.COM | FindMAC <MAC Token>
+       where MAC Token is the word you expect to be before
+       the MAC address (like node, MAC, Address ...)
+In the first form, the token is assumed to be Address
+
+FindMAC returns the found MAC address in the standard output
+without newline. The MAC address is padded with 0 at the
+beginning till a length of 12 digits to be used in Novell's
+standard way of writing.
+
+This is freeware and may be distributed and used as long I am
+noticed as author of the idea and program
+
+1.9.1999 Schlomo Schapiro huji at schlomo dot schapiro dot org
+
