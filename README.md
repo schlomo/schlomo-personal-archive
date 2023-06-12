@@ -1,3 +1,3 @@
 ## Schlomo Personal Archive
 
-Idea found at https://stackoverflow.com/a/53218452
+Idea inspired by https://stackoverflow.com/a/53218452

@@ -19,7 +19,7 @@
       const data = await response.json();
       let htmlString = '';
       for (let file of data) {
-        htmlString += `<li><a href="${file.path}">${file.name}</a></li>`;
+        htmlString += `<li><a href="${encodeURI(file.name)}">${file.name}</a></li>`;
       }
       document.getElementById("list").innerHTML = htmlString;
       })()
