@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="{{ if .Description }}{{ .Description }}{{ else }}{{ .Site.Params.description }}{{ end }}">
+    <meta name="keywords"
+        content="Schlomo Schapiro, DevOps, presentations, talks, archive, PDF, Linux, security, compliance, automation,cloud, ReaR">
+    <meta name="author" content="{{ .Site.Params.author }}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ .Section }}{{ if not .IsHome }} | {{ .Site.Title }}{{ end }}">
+    <meta property="og:description"
+        content="{{ if .Description }}{{ .Description }}{{ else }}{{ .Site.Params.description }}{{ end }}">
+    <meta property="og:url" content="{{ .Permalink }}">
+    <meta property="og:site_name" content="{{ .Site.Title }}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary">
+    <meta property="twitter:title" content="{{ .Section }}{{ if not .IsHome }} | {{ .Site.Title }}{{ end }}">
+    <meta property="twitter:description"
+        content="{{ if .Description }}{{ .Description }}{{ else }}{{ .Site.Params.description }}{{ end }}">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "{{ .Site.Title }}",
+    "description": "{{ .Site.Params.description }}",
+    "url": "{{ .Site.BaseURL }}",
+    "author": {
+      "@type": "Person",
+      "name": "{{ .Site.Params.author }}",
+      "url": "{{ .Site.Params.homepage }}"
+    }
+  }
+  </script>
+
+    <link href="/favicon.ico" rel="icon" type="image/x-icon">
+    <link href="/css/style.css" rel="stylesheet" type="text/css">
+    <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Section }} | {{ .Site.Title }}{{ end }}</title>
+</head>
+
+<body>
+    <h1>{{ .Site.Title }}
+        {{ if not .IsHome }}<br><span class="section-year">✦ {{ .Section }} ✦</span>{{ end }}
+    </h1>
+
+    <p>
+        On my <a target="_blank" href="{{ .Site.Params.homepage }}">Homepage</a> you will find my blog articles,
+        a complete list of
+        <a target="_blank" href="{{ .Site.Params.homepage }}/p/publications.html">publications, talks and videos</a>
+        and also my
+        <a target="_blank" href="{{ .Site.Params.homepage }}/p/5-devops-principles.html">5 DevOps Principles</a>.
+    </p>
+
+    {{ block "main" . }}{{ end }}
+
+    <site-footer>
+        <a target="_blank" href="http://www.schapiro.org/impressum">Impressum &amp; Datenschutz</a>
+    </site-footer>
+</body>
+
+</html>

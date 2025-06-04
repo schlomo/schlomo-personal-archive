@@ -1,0 +1,37 @@
+{{ define "main" }}
+<back-link>
+    <a href="/">⬅︎ Back to archive home</a>
+</back-link>
+
+<file-list>
+    {{- $sectionName := .Section }}
+    {{- $staticPath := printf "static/%s" $sectionName }}
+    {{- if fileExists $staticPath }}
+    {{- range readDir $staticPath }}
+    {{- if not .IsDir }}
+    {{- $isPDF := strings.HasSuffix .Name ".pdf" }}
+    <a href="/{{ $sectionName }}/{{ .Name }}" target="_blank">
+        <file-item {{ if not $isPDF }}type="non-pdf" {{ end }}>
+            {{- if $isPDF }}
+            <file-thumbnail>
+                {{- $thumbnailName := .Name | replaceRE "\\.pdf$" ".png" }}
+                <img src="/thumbnails/{{ $sectionName }}/{{ $thumbnailName }}" alt="Thumbnail of {{ .Name }}"
+                    loading="lazy">
+            </file-thumbnail>
+            {{- else }}
+            <file-icon>📄</file-icon>
+            {{- end }}
+            <file-title>{{ .Name }}</file-title>
+        </file-item>
+    </a>
+    {{- end }}
+    {{- end }}
+    {{- else }}
+    <empty-state>
+        📂
+        <h3>No documents found</h3>
+        <p>This section doesn't contain any documents yet.</p>
+    </empty-state>
+    {{- end }}
+</file-list>
+{{ end }}

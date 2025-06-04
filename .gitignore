@@ -1,2 +1,13 @@
 .DS_Store
 
+# Hugo
+/public/
+/resources/
+hugo_stats.json
+
+# Generated thumbnails
+/static/thumbnails/
+
+# Docker
+.env
+

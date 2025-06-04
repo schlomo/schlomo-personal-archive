@@ -1,0 +1,14 @@
+baseURL = "https://archive.schlomo.schapiro.org"
+languageCode = "en-us"
+title = "Schlomo Schapiro Personal Archive Of Public Files"
+
+# SEO essentials
+enableRobotsTXT = true
+
+# Disable unused taxonomies
+disableKinds = ["taxonomy", "term"]
+
+[params]
+description = "Public archive of presentations, talks, and documents by Schlomo Schapiro on DevOps, Linux, Security, and Technology."
+author = "Schlomo Schapiro"
+homepage = "https://schlomo.schapiro.org"
