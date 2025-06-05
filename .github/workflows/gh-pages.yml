@@ -23,10 +23,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Hugo and ImageMagick via Snap
+      - name: Install Hugo via Snap and ImageMagick via APT
         run: |
           sudo snap install hugo
-          sudo snap install imagemagick
+          sudo apt-get update
+          sudo apt-get install -y imagemagick ghostscript
       - name: Checkout
         uses: actions/checkout@v4
         with:
