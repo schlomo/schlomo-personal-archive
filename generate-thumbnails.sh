@@ -1,17 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Requires bash 4+ for readarray
+
+# Source shared dependency checking functions
+source "$(dirname "$0")/lib/check-deps.sh"
+
+# Check dependencies
+check_imagemagick
 
 echo "🖼️  Generating PDF Thumbnails"
 echo "=============================="
 
-# Check if ImageMagick is available
-if ! command -v convert &> /dev/null; then
-    echo "❌ ImageMagick not found! Please install it:"
-    echo "  macOS: brew install imagemagick"
-    echo "  Linux: sudo apt-get install imagemagick ghostscript"
-    exit 1
-fi
+# Get the correct ImageMagick command
+convert_cmd=$(get_imagemagick_convert_cmd)
 
-echo "✅ ImageMagick found: $(convert -version | head -1)"
 echo ""
 
 # Create thumbnails directory if it doesn't exist
@@ -19,13 +20,13 @@ mkdir -p static/thumbnails
 
 # Counter for generated thumbnails
 count=0
-total=$(find static -name "*.pdf" -not -path "*/thumbnails/*" | wc -l | tr -d ' ')
+total=$(find static -name "*.pdf" -not -path "*/thumbnails/*" -print0 | sort -z | tr -cd '\0' | wc -c)
 
 echo "📄 Found $total PDF files to process"
 echo ""
 
-# Process each PDF file
-find static -name "*.pdf" -not -path "*/thumbnails/*" | while read -r pdf_file; do
+# Process each PDF file using safe filename handling
+while IFS= read -r -d '' pdf_file; do
     # Extract relative path from static/
     rel_path="${pdf_file#static/}"
     
@@ -41,7 +42,7 @@ find static -name "*.pdf" -not -path "*/thumbnails/*" | while read -r pdf_file; 
         echo "🖼️  $(basename "$pdf_file") → thumbnails/${rel_path%.pdf}.png"
         
         # Generate thumbnail: 200px height, white background, first page only
-        if convert -thumbnail x200 -background white -alpha remove "${pdf_file}[0]" "$thumb_path" 2>/dev/null; then
+        if $convert_cmd -thumbnail x200 -background white -alpha remove "${pdf_file}[0]" "$thumb_path" 2>/dev/null; then
             ((count++))
         else
             echo "❌ Failed to generate thumbnail for $pdf_file"
@@ -49,7 +50,7 @@ find static -name "*.pdf" -not -path "*/thumbnails/*" | while read -r pdf_file; 
     else
         echo "⏭️  $(basename "$pdf_file") (thumbnail up to date)"
     fi
-done
+done < <(find static -name "*.pdf" -not -path "*/thumbnails/*" -print0 | sort -z)
 
 echo ""
 echo "✅ Generated $count new thumbnails"

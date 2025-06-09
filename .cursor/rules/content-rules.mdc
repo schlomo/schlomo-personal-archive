@@ -1,0 +1,41 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Content Processing Rules
+
+## Date Handling Rules
+- **NO file modification date fallbacks** (files are copied, dates are meaningless)
+- Extract year from filename content using regex `([0-9]{4})`
+- Fall back to folder year if no year found in filename
+- Always use January 1st (`YYYY-01-01`) format - don't guess months
+- Special case: `2005-2016` folder uses `2010-01-01` (middle of range)
+
+## Content Classification Rules
+- **Don't guess tags, conferences, or categories** from filenames
+- Use only "presentation" category for all PDF files
+- Keep original filenames intact in titles
+- No automatic extraction of conference names or event details
+
+## File Processing
+- Process all PDF files in `static/YEAR/` directories
+- Preserve original filename structure
+- Don't attempt to clean or modify filenames beyond basic processing
+
+## Example Date Extraction Logic
+```bash
+# Try to extract year from filename first
+if [[ "$filename" =~ ([0-9]{4}) ]]; then
+    local year="${BASH_REMATCH[1]}"
+    echo "$year-01-01"
+    return
+fi
+
+# Fallback: use directory year
+if [[ "$year_dir" =~ ^[0-9]{4}$ ]]; then
+    echo "$year_dir-01-01"
+elif [[ "$year_dir" == "2005-2016" ]]; then
+    echo "2010-01-01"  # Middle of range
+fi
+```

@@ -23,9 +23,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Hugo via Snap and ImageMagick via APT
+      - name: Install dependencies
         run: |
-          sudo snap install hugo
+          sudo snap install hugo yq
           sudo apt-get update
           sudo apt-get install -y imagemagick ghostscript
       - name: Checkout
@@ -35,21 +35,14 @@ jobs:
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
-      - name: Generate PDF Thumbnails
-        run: |
-          echo "🖼️  Generating PDF thumbnails..."
-          ./generate-thumbnails.sh
-      - name: Build with Hugo
+      - name: Build site
         env:
           # For maximum backward compatibility with Hugo modules
           HUGO_ENVIRONMENT: production
           HUGO_ENV: production
         run: |
-          hugo \
-            --gc \
-            --minify \
-            --cleanDestinationDir \
-            --baseURL "${{ steps.pages.outputs.base_url }}/"          
+          # Use the consolidated build script with GitHub Pages base URL and production optimizations
+          ./build.sh -b "${{ steps.pages.outputs.base_url }}/" -p
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

@@ -1,0 +1,40 @@
+{{- printf "<?xml version=\"1.0\" encoding=\"utf-8\"?>" | safeHTML }}
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
+  <title>{{ .Site.Title }}</title>
+  <link href="{{ .Site.BaseURL }}index.xml" rel="self" type="application/atom+xml"/>
+  <link href="{{ .Site.BaseURL }}" rel="alternate" type="text/html"/>
+  <updated>{{ now.Format "2006-01-02T15:04:05Z07:00" }}</updated>
+  <id>{{ .Site.BaseURL }}</id>
+  <subtitle>{{ .Site.Params.description }}</subtitle>
+  <generator uri="https://gohugo.io/" version="{{ hugo.Version }}">Hugo</generator>
+  
+  {{/* Access the generated data */}}
+  {{ $presentations := .Site.Data.generated.presentations }}
+  {{ if $presentations }}
+    {{/* Get years from site configuration */}}
+    {{ range .Site.Params.years }}
+      {{ $year := . }}
+      {{ $yearPresentations := index $presentations $year }}
+      {{ if $yearPresentations }}
+        {{ range $yearPresentations }}
+          <entry>
+            <title>{{ .title }}</title>
+            <link href="{{ $.Site.BaseURL }}{{ $year }}/{{ .filename }}" rel="alternate" type="application/pdf"/>
+            {{ if .has_thumbnail }}
+            <link href="{{ $.Site.BaseURL }}{{ .thumbnail }}" rel="enclosure" type="image/png"/>
+            {{ end }}
+            <id>{{ $.Site.BaseURL }}{{ $year }}/{{ .filename }}</id>
+            <updated>{{ .date | dateFormat "2006-01-02T15:04:05Z07:00" }}</updated>
+            <published>{{ .date | dateFormat "2006-01-02T15:04:05Z07:00" }}</published>
+            <summary type="text">{{ .description | default .title }}</summary>
+            <content type="html">{{ if .has_thumbnail }}&lt;div class=&quot;separator&quot; style=&quot;clear: both; text-align: center;&quot;&gt;&lt;a href=&quot;{{ $.Site.BaseURL }}{{ $year }}/{{ .filename }}&quot; style=&quot;clear: right; float: right; margin-bottom: 1em; margin-left: 1em;&quot;&gt;&lt;img alt=&quot;{{ .title }}&quot; height=&quot;200&quot; src=&quot;{{ $.Site.BaseURL }}{{ .thumbnail }}&quot; width=&quot;356&quot; style=&quot;border: 1px solid #ccc;&quot; /&gt;&lt;/a&gt;&lt;/div&gt;{{ end }}&lt;p&gt;&lt;strong&gt;Download PDF:&lt;/strong&gt; &lt;a href=&quot;{{ $.Site.BaseURL }}{{ $year }}/{{ .filename }}&quot; target=&quot;_blank&quot;&gt;{{ .title }}&lt;/a&gt;&lt;/p&gt;</content>
+            {{ if .has_thumbnail }}
+            <media:thumbnail url="{{ $.Site.BaseURL }}{{ .thumbnail }}" height="200" width="356"/>
+            {{ end }}
+            <category term="presentation"/>
+          </entry>
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+</feed> 

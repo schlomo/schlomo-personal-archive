@@ -1,9 +1,20 @@
-.DS_Store
-
 # Hugo
-/public/
-/resources/
-hugo_stats.json
+public/
+resources/
+.hugo_build.lock
+
+# Generated files
+data/generated.yaml
+
+# Auto-generated content directories (created from hugo.toml config)
+content/*/
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 
 # Generated thumbnails
 /static/thumbnails/

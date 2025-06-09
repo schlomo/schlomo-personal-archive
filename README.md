@@ -6,14 +6,15 @@ This is a personal archive of presentations, talks, and documents, powered by Hu
 
 ### Prerequisites
 
-Install Hugo and ImageMagick (one-time setup):
+Install Hugo, ImageMagick, and yq (one-time setup):
 
 ```bash
 # On macOS
-brew install hugo imagemagick
+brew install hugo imagemagick yq
 
 # On Linux  
 sudo apt-get install hugo imagemagick ghostscript
+# Install yq from: https://github.com/mikefarah/yq/releases
 
 # Or download Hugo from: https://github.com/gohugoio/hugo/releases
 ```

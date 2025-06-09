@@ -1,29 +1,25 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Requires bash 4+ for readarray
+
+# Source shared dependency checking functions
+source "$(dirname "$0")/lib/check-deps.sh"
 
 echo "🚀 Starting Hugo development server..."
+echo "======================================"
 
-# Check if Hugo is installed
-if ! command -v hugo &> /dev/null; then
-    echo "❌ Hugo is not installed!"
-    echo ""
-    echo "📦 Install Hugo:"
-    echo "  On macOS:    brew install hugo imagemagick"
-    echo "  On Linux:    sudo apt-get install hugo imagemagick ghostscript"
-    echo "  Or download: https://github.com/gohugoio/hugo/releases"
-    exit 1
-fi
+# Check dependencies
+echo "🔍 Checking dependencies..."
+check_hugo
+echo ""
 
-echo "✅ Hugo found: $(hugo version)"
+# Generate presentation data
+echo "📊 Generating presentation data..."
+./generate-data.sh
+echo ""
 
-# Check for ImageMagick and generate thumbnails if available
-if command -v convert &> /dev/null || command -v magick &> /dev/null; then
-    echo "🖼️  Generating PDF thumbnails..."
-    ./generate-thumbnails.sh --quiet 2>/dev/null || ./generate-thumbnails.sh
-else
-    echo "⚠️  ImageMagick not found - PDF thumbnails disabled"
-    echo "   Install with: brew install imagemagick (macOS) or sudo apt-get install imagemagick (Linux)"
-fi
-
+# Generate thumbnails
+echo "🖼️  Generating PDF thumbnails..."
+./generate-thumbnails.sh
 echo ""
 
 # Start the development server

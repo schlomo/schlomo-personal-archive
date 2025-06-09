@@ -1,0 +1,49 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Hugo Template Standards
+
+## Configuration Access
+- Use `{{ range .Site.Params.years }}` to iterate over years
+- Use `{{ .Site.Params.years }}` to access the centralized year configuration
+- Never hardcode year lists in templates
+
+## URL Handling
+- **DO NOT manually encode URLs** - Hugo automatically handles URL encoding correctly
+- Use raw filenames in `href` and `src` attributes: `{{ .filename }}`
+- Hugo produces proper percent-encoding (`%20` for spaces) and HTML-safe entities (`&amp;` for `&`)
+- Avoid `urlquery` and `urlize` filters as they cause HTML entity encoding issues
+
+### Examples
+```hugo
+{{/* CORRECT - Let Hugo handle encoding */}}
+<a href="/{{ $year }}/{{ .filename }}">{{ .title }}</a>
+<img src="/thumbnails/{{ $year }}/{{ .thumbnail }}">
+
+{{/* WRONG - Manual encoding causes issues */}}
+<a href="/{{ $year }}/{{ .filename | urlquery }}">{{ .title }}</a>
+```
+
+## Atom Feed Rules (RFC 4287 Compliant)
+- Use centralized year configuration: `{{ range .Site.Params.years }}`
+- Follow Atom 1.0 specification with proper `<feed>`, `<entry>`, `<link>` structure
+- Use raw filenames in URLs - Hugo handles encoding automatically
+- Include proper `<id>` elements for each entry
+- Support thumbnails in `<content>` and `<link rel="enclosure">` elements
+- No automatic category guessing
+
+## Template Organization
+- Keep templates focused and single-purpose
+- Use partials for reusable components
+- Comment complex template logic
+
+## Example Year Iteration
+```hugo
+{{/* Get years from site configuration */}}
+{{ range .Site.Params.years }}
+  {{ $year := . }}
+  {{/* Process each year */}}
+{{ end }}
+```

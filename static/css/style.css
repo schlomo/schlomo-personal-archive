@@ -30,27 +30,7 @@ body {
     min-height: 100vh;
 }
 
-.section-title {
-    text-align: center;
-    margin-top: 2rem;
-}
 
-.section-title h1 {
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-size: 2.25rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-}
-
-.section-subtitle {
-    font-size: 1.125rem;
-    color: var(--text-light);
-    max-width: 500px;
-    margin: 0 auto;
-}
 
 /* Empty State */
 empty-state {
@@ -77,21 +57,7 @@ empty-state p {
     font-size: 1rem;
 }
 
-/* Hero Section */
-.hero-section {
-    text-align: center;
-    margin-bottom: 4rem;
-    padding: 2rem 0;
-}
 
-.hero-subtitle {
-    font-size: 1.25rem;
-    color: var(--text-light);
-    margin-top: 1rem;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
 
 /* Archive Grid */
 year-grid {
@@ -102,7 +68,7 @@ year-grid {
     margin-bottom: 4rem;
 }
 
-.year-card {
+year-card {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -111,15 +77,24 @@ year-grid {
     background: var(--surface);
     border-radius: 16px;
     box-shadow: var(--shadow);
-    text-decoration: none;
-    color: var(--text-color);
-    transition: all 0.3s ease;
     border: 1px solid var(--border);
     position: relative;
     overflow: hidden;
+    transition: all 0.3s ease;
 }
 
-.year-card::before {
+year-card a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--text-color);
+    width: 100%;
+    height: 100%;
+}
+
+year-card::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -129,16 +104,16 @@ year-grid {
     z-index: 1;
 }
 
-.year-card>* {
+year-card>* {
     position: relative;
     z-index: 2;
 }
 
-.year-card:hover::before {
+year-card:hover::before {
     opacity: 0.05;
 }
 
-.year-card:hover {
+year-card:hover {
     transform: translateY(-8px);
     box-shadow: var(--shadow-lg);
     border-color: var(--secondary-color);
@@ -153,7 +128,7 @@ year-number {
     transition: all 0.3s ease;
 }
 
-.year-card:hover year-number {
+year-card:hover year-number {
     color: var(--secondary-color);
     transform: scale(1.1);
 }
@@ -165,7 +140,7 @@ year-arrow {
     transition: transform 0.3s ease;
 }
 
-.year-card:hover year-arrow {
+year-card:hover year-arrow {
     transform: translateX(4px);
 }
 
@@ -215,66 +190,9 @@ h2 {
     font-weight: 600;
     margin: 2rem 0 1.5rem;
     text-align: center;
-    position: relative;
 }
 
-h2::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 3px;
-    background: var(--gradient);
-    border-radius: 2px;
-}
 
-ul {
-    list-style: none;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin: 2rem 0;
-}
-
-li {
-    background: var(--surface);
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-    transition: all 0.3s ease;
-    overflow: hidden;
-}
-
-li:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-}
-
-li a {
-    display: block;
-    padding: 1.5rem;
-    text-decoration: none;
-    color: var(--text-color);
-    font-weight: 600;
-    font-size: 1.125rem;
-    text-align: center;
-    position: relative;
-    background: linear-gradient(135deg, var(--surface) 0%, #f1f5f9 100%);
-    transition: all 0.3s ease;
-}
-
-li a:hover {
-    color: var(--primary-color);
-    background: linear-gradient(135deg, var(--surface) 0%, #e2e8f0 100%);
-}
-
-li a::before {
-    content: '📄';
-    display: block;
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-}
 
 a {
     color: var(--secondary-color);
@@ -285,6 +203,8 @@ a {
 a:hover {
     color: var(--primary-color);
 }
+
+
 
 back-link {
     display: block;
@@ -447,7 +367,7 @@ file-item:hover file-title {
         gap: 1rem;
     }
 
-    .year-card {
+    year-card {
         padding: 1.5rem 1rem;
     }
 
@@ -471,9 +391,7 @@ file-item:hover file-title {
         text-align: center;
     }
 
-    ul {
-        grid-template-columns: 1fr;
-    }
+
 }
 
 @media (max-width: 480px) {
@@ -506,20 +424,43 @@ hr {
 }
 
 site-footer {
-    display: block;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
     margin-top: 4rem;
     padding-top: 2rem;
     border-top: 1px solid var(--border);
     color: var(--text-light);
     font-size: 0.875rem;
-    text-align: center;
+}
+
+footer-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+footer-right {
+    display: flex;
+    align-items: center;
 }
 
 site-footer a {
     color: var(--text-light);
     transition: color 0.2s ease;
+    text-decoration: none;
 }
 
 site-footer a:hover {
     color: var(--primary-color);
+}
+
+/* Mobile footer */
+@media (max-width: 480px) {
+    site-footer {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
 }
