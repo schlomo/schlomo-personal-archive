@@ -1,0 +1,51 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Bash Coding Standards (bash 4+ required)
+
+## Script Requirements
+- All scripts assume **bash 4+** and don't include version checks
+- Use `#!/usr/bin/env bash` shebang
+
+## Modern Bash Features
+- Use `readarray -t` for array creation from command output and other modern features
+- Use bash parameter expansion for string manipulation instead of external commands
+- Prefer native bash features over external tool dependencies where possible
+- Use bash 4+ parameter expansion for whitespace trimming:
+```bash
+# Trim whitespace using bash 4+ parameter expansion
+var="${var#"${var%%[![:space:]]*}"}"  # remove leading whitespace
+var="${var%"${var##*[![:space:]]}"}"  # remove trailing whitespace
+```
+
+## File Processing
+- Assume that filenames have white space and special chars and use quoting and other means of safe handling
+- Use `find -print0` with `sort -z` for safe filename handling
+- Process files with `while IFS= read -r -d '' file; do ... done < <(find ...)`
+
+## Error Handling
+- Scripts fail fast with clear error messages
+- Use proper exit codes
+- Include descriptive error messages with emoji for clarity
+
+## Dependency Management
+- Create shared dependency libraries to avoid duplication
+- Each script should only check dependencies it directly uses
+- Use consolidated functions for common dependency checks
+- Example: `lib/check-deps.sh` with reusable functions
+
+## Argument Parsing
+- Use `getopts` for command-line argument parsing
+- Provide help messages with `-h` option
+- Use bash arrays instead of `eval` for building command arguments:
+```bash
+# CORRECT - Use arrays
+args=("command" "--option")
+args+=("--flag" "$value")
+"${args[@]}"
+
+# WRONG - Using eval
+eval "command --option --flag '$value'"
+```

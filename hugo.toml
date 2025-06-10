@@ -1,0 +1,23 @@
+baseURL = "https://archive.schlomo.schapiro.org"
+languageCode = "en-us"
+title = "Schlomo Schapiro Personal Archive Of Public Files"
+
+# SEO essentials
+enableRobotsTXT = true
+
+# Disable unused taxonomies
+disableKinds = ["taxonomy", "term"]
+
+# Configure outputs - main HTML and Atom feed (using RSS config for compatibility)
+# Note: index.xml template contains Atom format with Media RSS extensions
+[outputs]
+home = ["HTML", "RSS"]
+section = ["HTML"]
+
+[params]
+description = "Public archive of presentations, talks, and documents by Schlomo Schapiro on DevOps, Linux, Security, and Technology."
+author = "Schlomo Schapiro"
+homepage = "https://schlomo.schapiro.org"
+
+# Year directories for content generation (newest first)
+years = ["2025", "2024", "2023", "2022", "2005-2016"]

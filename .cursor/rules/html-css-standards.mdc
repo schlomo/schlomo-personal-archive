@@ -1,0 +1,101 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# HTML/CSS Standards
+
+## Custom HTML Elements
+**PRINCIPLE**: Use semantic custom HTML elements instead of generic divs with CSS classes. Each element should represent a distinct semantic purpose without unnecessary nesting.
+
+**RULE**: Avoid wrapper elements that serve no semantic purpose - apply layout directly to meaningful containers.
+
+### Current Custom Elements
+- **File listing**: `<file-list>`, `<file-item>`, `<file-thumbnail>`, `<file-icon>`, `<file-title>`
+- **Navigation**: `<back-link>`, `<year-grid>`, `<year-card>`, `<year-number>`, `<year-arrow>`
+- **State**: `<empty-state>`
+- **Footer**: `<site-footer>`, `<footer-left>`, `<footer-right>`
+
+Create new custom elements as needed, following the semantic naming principle.
+
+## CSS Architecture
+
+### CSS Custom Properties (Variables)
+Always use CSS custom properties defined in `:root`:
+```css
+:root {
+    --primary-color: #2c5aa0;
+    --secondary-color: #4a90e2;
+    --accent-color: #7b68ee;
+    --text-color: #2c3e50;
+    --text-light: #6c757d;
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --border-hover: #cbd5e0;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+}
+```
+
+### Typography Standards
+- Use system font stack: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif`
+- Line height: `1.6` for body text
+- Use gradient text for headings: `background: var(--gradient); -webkit-background-clip: text;`
+
+### Layout Patterns
+- **Max width**: `900px` with auto margins for centered layout
+- **Grid**: Use CSS Grid with `repeat(auto-fit, minmax())` for responsive layouts
+- **Spacing**: Use consistent padding/margin (multiples of `0.5rem`)
+- **Border radius**: `16px` for cards, `8px` for smaller elements
+
+### Interactive States
+Always include hover states with smooth transitions:
+```css
+.element {
+    transition: all 0.3s ease;
+}
+
+.element:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+}
+```
+
+### Responsive Design
+- **Mobile-first approach**
+- **Breakpoints**: `768px` for tablet, `480px` for mobile
+- **Grid adjustments**: Reduce columns on smaller screens
+- **Font sizes**: Scale down headings on mobile
+
+## HTML Structure Guidelines
+
+### Semantic Structure Principles
+- Each custom element should have a clear semantic purpose
+- Avoid unnecessary wrapper elements - apply CSS layout directly to meaningful containers
+- Use descriptive element names that reflect content purpose, not visual appearance
+- Maintain flat hierarchy where possible while preserving semantic meaning
+
+### Image Best Practices
+- Always include `alt` attributes
+- Use `loading="lazy"` for thumbnails
+- Thumbnail images should be properly sized
+
+### Accessibility
+- Use semantic HTML elements
+- Ensure proper color contrast
+- Include focus states for keyboard navigation
+- Use descriptive link text
+
+## Performance Guidelines
+- Minimize CSS file size
+- Use efficient selectors
+- Leverage CSS custom properties for consistency
+- Optimize hover animations for 60fps
+
+## Code Organization
+- Group related styles together
+- Use comments to separate major sections
+- Follow BEM-like naming for utility classes
+- Keep specificity low and predictable

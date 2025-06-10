@@ -1,0 +1,529 @@
+:root {
+    --primary-color: #2c5aa0;
+    --secondary-color: #4a90e2;
+    --accent-color: #7b68ee;
+    --text-color: #2c3e50;
+    --text-light: #6c757d;
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --border-hover: #cbd5e0;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Force layout recalculation on orientation change */
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
+@supports (height: 100dvh) {
+    body {
+        min-height: 100dvh;
+    }
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background: var(--background);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 60px 20px;
+}
+
+
+
+/* Empty State */
+empty-state {
+    display: block;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    font-size: 4rem;
+    opacity: 0.7;
+}
+
+empty-state h3 {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+    margin-top: 1rem;
+}
+
+empty-state p {
+    color: var(--text-light);
+    font-size: 1rem;
+}
+
+
+
+/* Archive Grid */
+year-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 4rem;
+}
+
+year-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    background: var(--surface);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+year-card a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--text-color);
+    width: 100%;
+    height: 100%;
+}
+
+year-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+year-card>* {
+    position: relative;
+    z-index: 2;
+}
+
+year-card:hover::before {
+    opacity: 0.05;
+}
+
+year-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--secondary-color);
+}
+
+year-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+year-card:hover year-number {
+    color: var(--secondary-color);
+    transform: scale(1.1);
+}
+
+year-arrow {
+    display: block;
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+    transition: transform 0.3s ease;
+}
+
+year-card:hover year-arrow {
+    transform: translateX(4px);
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 1rem;
+    letter-spacing: -0.025em;
+}
+
+h1 a {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+    display: block;
+    transition: all 0.3s ease;
+}
+
+h1 a:hover {
+    transform: scale(1.02);
+    filter: brightness(1.1);
+}
+
+.section-year {
+    display: inline-block;
+    position: relative;
+    padding: 0 1rem;
+    color: var(--accent-color);
+    font-size: 0.9em;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: sparkle 3s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+
+    0%,
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+        filter: brightness(1.1);
+    }
+}
+
+h2 {
+    color: var(--text-color);
+    font-size: 1.875rem;
+    font-weight: 600;
+    margin: 2rem 0 1.5rem;
+    text-align: center;
+}
+
+
+
+a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--primary-color);
+}
+
+
+
+back-link {
+    display: block;
+    margin: 2rem;
+    text-align: center;
+}
+
+back-link a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    color: var(--text-color);
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+}
+
+back-link a:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* File List */
+file-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+file-list a {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s ease;
+}
+
+file-list a:hover {
+    text-decoration: none;
+    transform: translateY(-4px);
+}
+
+file-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+file-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+file-item:hover::before {
+    transform: scaleX(1);
+}
+
+file-item:hover {
+    border-color: var(--secondary-color);
+    box-shadow: var(--shadow-lg);
+}
+
+file-thumbnail {
+    display: block;
+    flex-shrink: 0;
+    width: 140px;
+    position: relative;
+}
+
+file-thumbnail img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+file-item:hover file-thumbnail img {
+    transform: scale(1.05);
+    border-color: var(--secondary-color);
+}
+
+/* Non-PDF Files */
+file-item[type="non-pdf"] {
+    align-items: center;
+}
+
+file-icon {
+    display: block;
+    font-size: 4rem;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    flex-shrink: 0;
+    width: 140px;
+    text-align: center;
+}
+
+file-item[type="non-pdf"]:hover file-icon {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+file-title {
+    display: block;
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: var(--text-color);
+    line-height: 1.4;
+    word-wrap: break-word;
+    transition: color 0.3s ease;
+    flex: 1;
+    min-width: 0;
+}
+
+file-item:hover file-title {
+    color: var(--primary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 20px 16px 80px 16px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    year-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    year-card {
+        padding: 1.5rem 1rem;
+    }
+
+    file-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    file-thumbnail {
+        width: 180px;
+        align-self: center;
+    }
+
+    file-icon {
+        width: 180px;
+        align-self: center;
+    }
+
+    file-title {
+        text-align: center;
+    }
+
+
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 16px 16px 100px 16px;
+    }
+
+    file-item {
+        padding: 1rem;
+    }
+
+    file-thumbnail {
+        width: 150px;
+    }
+
+    file-icon {
+        width: 150px;
+    }
+
+    year-number {
+        font-size: 1.5rem;
+    }
+
+    empty-state {
+        font-size: 3rem;
+    }
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 3rem 0;
+}
+
+site-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-light);
+    font-size: 0.875rem;
+}
+
+footer-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+footer-right {
+    display: flex;
+    align-items: center;
+}
+
+site-footer a {
+    color: var(--text-light);
+    transition: color 0.2s ease;
+    text-decoration: none;
+}
+
+site-footer a:hover {
+    color: var(--primary-color);
+}
+
+/* Mobile footer */
+@media (max-width: 480px) {
+    site-footer {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+}
+
+/* Orientation change handling */
+@media screen and (orientation: landscape) and (max-height: 480px) {
+
+    /* Landscape mode on phones */
+    file-item {
+        flex-direction: row;
+        text-align: left;
+        gap: 1rem;
+    }
+
+    file-thumbnail {
+        width: 120px;
+    }
+
+    file-icon {
+        width: 120px;
+    }
+
+    file-title {
+        text-align: left;
+    }
+}
+
+/* Force layout recalculation on orientation change */
+@media screen and (orientation: portrait) {
+    file-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media screen and (orientation: landscape) {
+    file-list {
+        grid-template-columns: 1fr;
+    }
+}

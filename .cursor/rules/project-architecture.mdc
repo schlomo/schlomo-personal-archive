@@ -1,0 +1,33 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Schlomo Schapiro Personal Archive - Core Architecture
+
+## Project Overview
+This is a Hugo static site that serves as a personal archive of PDF presentations and documents. The site automatically generates content from PDF files organized in year-based directories.
+
+## Architecture Principles
+
+### 1. Single Source of Truth for Configuration
+- **Years are defined ONLY in `hugo.toml`** under `params.years` array
+- All templates and scripts read from this centralized configuration
+- Never hardcode years in templates or scripts
+
+### 2. Auto-Generated Content Structure
+- Content directories (`content/YEAR/`) are created automatically by `generate-data.sh`
+- These directories contain minimal `_index.md` files for Hugo section pages
+- **IMPORTANT**: Auto-generated content directories are in `.gitignore` - never commit them
+
+### 3. Static File Organization
+- PDF files live in `static/YEAR/` directories
+- Thumbnails are stored in `static/thumbnails/YEAR/`
+- The `generate-data.sh` script scans these directories to create `data/generated.yaml`
+
+## Dependencies
+- **Hugo** (static site generator)
+- **yq** (YAML processor for reading config)
+- **ImageMagick** (thumbnails)
+- **Ghostscript** (PDF processing support for ImageMagick)
+- **bash 4+** (for readarray and modern features)

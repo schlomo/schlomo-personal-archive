@@ -1,0 +1,45 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Project Workflow
+
+## Adding New Content
+1. **Add new year**: Update `params.years` in `hugo.toml`
+2. **Add PDFs**: Place in appropriate `static/YEAR/` directory
+3. **Generate data**: Run `./generate-data.sh`
+4. **Build site**: Run `./build.sh` (or `./build.sh -p` for production)
+
+## Git Rules
+Auto-generated files and directories in `.gitignore`:
+- `content/*/` (auto-generated directories)
+- `data/generated.yaml` (auto-generated file)
+- `public/` (Hugo output)
+- `static/thumbnails/` (generated thumbnails)
+
+## File Structure
+```
+├── hugo.toml                 # Central configuration (years defined here)
+├── generate-data.sh          # Creates content dirs + data/generated.yaml
+├── layouts/
+│   ├── index.html           # Homepage (uses .Site.Params.years)
+│   ├── index.xml            # RSS feed (uses .Site.Params.years)
+│   └── _default/section.html # Year pages
+├── static/
+│   ├── 2025/               # PDF files for 2025
+│   ├── 2024/               # PDF files for 2024
+│   └── thumbnails/         # Generated thumbnails
+├── content/                # Auto-generated (gitignored)
+│   ├── 2025/_index.md      # Created by script
+│   └── 2024/_index.md      # Created by script
+├── data/
+│   └── generated.yaml      # Auto-generated from PDFs
+└── public/                 # Hugo output
+```
+
+## Testing Checklist
+- Verify Hugo builds successfully after changes
+- Check that RSS feed validates
+- Ensure year pages are generated correctly
+- Test with PDF files containing special characters

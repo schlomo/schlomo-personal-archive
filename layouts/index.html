@@ -1,0 +1,32 @@
+{{ define "main" }}
+<h2>Archive by Year</h2>
+<year-grid>
+    {{- range .Site.Params.years }}
+    <year-card>
+        <a href="/{{ . }}/">
+            <year-number>{{ . }}</year-number>
+            <year-arrow>→</year-arrow>
+        </a>
+    </year-card>
+    {{- end }}
+    <year-card>
+        <a href="/huji/">
+            <year-number>pre 2002</year-number>
+            <year-arrow><svg version="1.0" xmlns="http://www.w3.org/2000/svg" height="1em"
+                    viewBox="0 0 33.855106 81.298634" preserveAspectRatio="xMidYMid meet">
+                    <g transform="translate(-15.144894,89.721885) scale(0.100000,-0.100000)" fill="#000000"
+                        stroke="none">
+                        <path d="M212 836 c-20 -105 -13 -136 29 -136 19 0 49 36 49 58 0 12 -3 12
+                        -15 2 -9 -7 -17 -11 -20 -9 -2 3 -9 36 -15 74 -6 38 -12 71 -14 72 -1 2 -8
+                        -26 -14 -61z" />
+                        <path d="M223 648 c0 -7 -1 -108 -1 -224 l-2 -210 -36 -42 c-27 -32 -35 -49
+                        -32 -72 3 -29 7 -26 93 80 50 61 100 123 112 137 l21 26 25 -49 c14 -27 32
+                        -58 40 -68 14 -19 15 -19 21 2 4 11 2 39 -5 62 -11 37 -10 42 9 63 12 13 22
+                        36 22 51 l0 27 -33 -26 -34 -25 -16 42 c-19 47 -16 48 -80 -39 l-45 -62 -6 37
+                        c-3 20 -6 97 -6 170 l0 132 -24 0 c-13 0 -24 -6 -23 -12z" />
+                    </g>
+                </svg></year-arrow>
+        </a>
+    </year-card>
+</year-grid>
+{{ end }}
