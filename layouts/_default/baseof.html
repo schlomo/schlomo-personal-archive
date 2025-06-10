@@ -48,8 +48,10 @@
 </head>
 
 <body>
-    <h1>{{ .Site.Title }}
-        {{ if not .IsHome }}<br><span class="section-year">✦ {{ .Section }} ✦</span>{{ end }}
+    <h1>
+        <a href="/">{{ .Site.Title }}
+            {{ if not .IsHome }}<br><span class="section-year">✦ {{ .Section }} ✦</span>{{ end }}
+        </a>
     </h1>
 
     <p>
