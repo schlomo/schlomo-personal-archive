@@ -25,7 +25,8 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          sudo snap install hugo yq
+          sudo snap install hugo || sudo snap install --candidate hugo
+          sudo snap install yq
           sudo apt-get update
           sudo apt-get install -y imagemagick ghostscript
       - name: Checkout
@@ -59,4 +60,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4 
+        uses: actions/deploy-pages@v4
