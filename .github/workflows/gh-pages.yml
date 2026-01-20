@@ -25,7 +25,10 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          sudo snap install hugo || sudo snap install --candidate hugo
+          sudo snap install hugo || \
+            sudo snap install --candidate hugo || \
+            sudo snap install --beta hugo || \
+            sudo snap install --edge hugo
           sudo snap install yq
           sudo apt-get update
           sudo apt-get install -y imagemagick ghostscript
