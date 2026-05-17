@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Requires bash 4+ for readarray
 
+set -euo pipefail
+
 # Source shared dependency checking functions
 source "$(dirname "$0")/lib/check-deps.sh"
 

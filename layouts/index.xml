@@ -9,7 +9,7 @@
   <generator uri="https://gohugo.io/" version="{{ hugo.Version }}">Hugo</generator>
   
   {{/* Access the generated data */}}
-  {{ $presentations := .Site.Data.generated.presentations }}
+  {{ $presentations := hugo.Data.generated.presentations }}
   {{ if $presentations }}
     {{/* Get years from site configuration */}}
     {{ range .Site.Params.years }}

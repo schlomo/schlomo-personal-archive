@@ -1,5 +1,5 @@
 baseURL = "https://archive.schlomo.schapiro.org"
-languageCode = "en-us"
+locale = "en-US"
 title = "Schlomo Schapiro Personal Archive Of Public Files"
 
 # SEO essentials
@@ -20,4 +20,4 @@ author = "Schlomo Schapiro"
 homepage = "https://schlomo.schapiro.org"
 
 # Year directories for content generation (newest first)
-years = ["2025", "2024", "2023", "2022", "2005-2016"]
+years = ["2026", "2025", "2024", "2023", "2022", "2005-2016"]
