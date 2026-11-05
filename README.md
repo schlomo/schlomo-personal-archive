@@ -46,7 +46,8 @@ Visit http://localhost:1313 to see the archive with live reloading.
 - `layouts/` - Hugo templates for generating pages  
 - `static/` - PDF files and other static assets (served at root URLs)
 - `static/thumbnails/` - Generated PDF thumbnails (auto-created, gitignored)
-- `hugo.toml` - Hugo configuration
+- `assets/css/style.css` - Styles (Hugo minifies and content-hashes them)
+- `hugo.toml` - Hugo configuration, including the color palette (`[params.colors]`)
 
 ## Adding New Documents
 
@@ -63,3 +64,5 @@ PDF thumbnails are automatically generated using ImageMagick:
 - Only first page of each PDF
 - Lazy loading for performance
 - Incremental updates (only regenerates if PDF is newer)
+
+AI coding agents: see [`AGENTS.md`](AGENTS.md) for the rules that keep this archive intact.
