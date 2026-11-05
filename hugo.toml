@@ -17,6 +17,8 @@ section = ["HTML"]
 [params]
 description = "Public archive of presentations, talks, and documents by Schlomo Schapiro on DevOps, Linux, Security, and Technology."
 author = "Schlomo Schapiro"
+# Short site name shown by Google in search results (WebSite.name, og:site_name)
+siteName = "Schlomo Schapiro"
 homepage = "https://schlomo.schapiro.org"
 
 # Year directories for content generation (newest first)

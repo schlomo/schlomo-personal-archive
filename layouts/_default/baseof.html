@@ -14,33 +14,43 @@
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="{{ .Section }}{{ if not .IsHome }} | {{ .Site.Title }}{{ end }}">
+    <meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Section }} | {{ .Site.Title }}{{ end }}">
     <meta property="og:description"
         content="{{ if .Description }}{{ .Description }}{{ else }}{{ .Site.Params.description }}{{ end }}">
     <meta property="og:url" content="{{ .Permalink }}">
-    <meta property="og:site_name" content="{{ .Site.Title }}">
+    <meta property="og:site_name" content="{{ .Site.Params.siteName }}">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary">
-    <meta property="twitter:title" content="{{ .Section }}{{ if not .IsHome }} | {{ .Site.Title }}{{ end }}">
+    <meta property="twitter:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Section }} | {{ .Site.Title }}{{ end }}">
     <meta property="twitter:description"
         content="{{ if .Description }}{{ .Description }}{{ else }}{{ .Site.Params.description }}{{ end }}">
 
-    <!-- Structured Data -->
+    <link rel="canonical" href="{{ .Permalink }}">
+    <meta name="application-name" content="{{ .Site.Params.siteName }}">
+
+    <!-- Structured Data: WebSite.name is what Google shows as the site name in search results.
+         It must be on the home page and should be short; see
+         https://developers.google.com/search/docs/appearance/site-names -->
+    {{ if .IsHome }}
     <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "{{ .Site.Title }}",
+    "name": "{{ .Site.Params.siteName }}",
+    "alternateName": ["{{ .Site.Title }}", "Schlomo Schapiro Archive"],
     "description": "{{ .Site.Params.description }}",
     "url": "{{ .Site.BaseURL }}",
+    "inLanguage": "en-US",
     "author": {
       "@type": "Person",
       "name": "{{ .Site.Params.author }}",
-      "url": "{{ .Site.Params.homepage }}"
+      "url": "{{ .Site.Params.homepage }}",
+      "sameAs": ["https://github.com/schlomo"]
     }
   }
   </script>
+    {{ end }}
 
     <link href="/favicon.ico" rel="icon" type="image/x-icon">
     <link href="/css/style.css" rel="stylesheet" type="text/css">
