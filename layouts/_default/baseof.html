@@ -4,35 +4,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{- $title := cond .IsHome .Site.Title (printf "%s | %s" .Section .Site.Title) }}
+    {{- $description := .Site.Params.description }}
+    {{- with .Description }}{{ $description = . }}{{ else }}{{ if not .IsHome }}{{ $description = printf "Talks, presentations and documents from %s by %s." .Section .Site.Params.author }}{{ end }}{{ end }}
+    {{- $image := .Site.Params.ogImage | absURL }}
+
+    <title>{{ $title }}</title>
 
     <!-- SEO Meta Tags -->
-    <meta name="description"
-        content="{{ if .Description }}{{ .Description }}{{ else }}{{ .Site.Params.description }}{{ end }}">
-    <meta name="keywords"
-        content="Schlomo Schapiro, DevOps, presentations, talks, archive, PDF, Linux, security, compliance, automation,cloud, ReaR">
+    <meta name="description" content="{{ $description }}">
     <meta name="author" content="{{ .Site.Params.author }}">
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Section }} | {{ .Site.Title }}{{ end }}">
-    <meta property="og:description"
-        content="{{ if .Description }}{{ .Description }}{{ else }}{{ .Site.Params.description }}{{ end }}">
-    <meta property="og:url" content="{{ .Permalink }}">
-    <meta property="og:site_name" content="{{ .Site.Params.siteName }}">
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary">
-    <meta property="twitter:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Section }} | {{ .Site.Title }}{{ end }}">
-    <meta property="twitter:description"
-        content="{{ if .Description }}{{ .Description }}{{ else }}{{ .Site.Params.description }}{{ end }}">
-
-    <link rel="canonical" href="{{ .Permalink }}">
     <meta name="application-name" content="{{ .Site.Params.siteName }}">
+    <link rel="canonical" href="{{ .Permalink }}">
+    {{ with .OutputFormats.Get "rss" }}<link rel="alternate" type="{{ .MediaType.Type }}" href="{{ .Permalink }}" title="{{ $.Site.Title }}">{{ end }}
+
+    <!-- Icons: Google Search needs a favicon of at least 48x48 px -->
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-48.png" type="image/png" sizes="48x48">
+    <link rel="icon" href="/favicon-96.png" type="image/png" sizes="96x96">
+    <link rel="icon" href="/favicon-192.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Open Graph: link previews in LinkedIn, Slack, Teams, WhatsApp, Signal, Mastodon, ... -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ .Site.Params.siteName }}">
+    <meta property="og:title" content="{{ $title }}">
+    <meta property="og:description" content="{{ $description }}">
+    <meta property="og:url" content="{{ .Permalink }}">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:image" content="{{ $image }}">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="{{ .Site.Params.ogImageAlt }}">
+
+    <!-- Twitter / X (also read by some other apps) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $title }}">
+    <meta name="twitter:description" content="{{ $description }}">
+    <meta name="twitter:image" content="{{ $image }}">
+    <meta name="twitter:image:alt" content="{{ .Site.Params.ogImageAlt }}">
 
     <!-- Structured Data: WebSite.name is what Google shows as the site name in search results.
          It must be on the home page and should be short; see
          https://developers.google.com/search/docs/appearance/site-names -->
-    {{ if .IsHome }}
+    {{- if .IsHome }}
     <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -42,6 +59,7 @@
     "description": "{{ .Site.Params.description }}",
     "url": "{{ .Site.BaseURL }}",
     "inLanguage": "en-US",
+    "image": "{{ $image }}",
     "author": {
       "@type": "Person",
       "name": "{{ .Site.Params.author }}",
@@ -50,11 +68,29 @@
     }
   }
   </script>
-    {{ end }}
+    {{- else }}
+    <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "{{ $title }}",
+    "description": "{{ $description }}",
+    "url": "{{ .Permalink }}",
+    "inLanguage": "en-US",
+    "isPartOf": {"@type": "WebSite", "name": "{{ .Site.Params.siteName }}", "url": "{{ .Site.BaseURL }}"},
+    "author": {"@type": "Person", "name": "{{ .Site.Params.author }}", "url": "{{ .Site.Params.homepage }}"},
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "{{ .Site.Params.siteName }}", "item": "{{ .Site.BaseURL }}"},
+        {"@type": "ListItem", "position": 2, "name": "{{ .Section }}", "item": "{{ .Permalink }}"}
+      ]
+    }
+  }
+  </script>
+    {{- end }}
 
-    <link href="/favicon.ico" rel="icon" type="image/x-icon">
     <link href="/css/style.css" rel="stylesheet" type="text/css">
-    <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Section }} | {{ .Site.Title }}{{ end }}</title>
 </head>
 
 <body>

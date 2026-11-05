@@ -19,6 +19,9 @@ description = "Public archive of presentations, talks, and documents by Schlomo 
 author = "Schlomo Schapiro"
 # Short site name shown by Google in search results (WebSite.name, og:site_name)
 siteName = "Schlomo Schapiro"
+# Link preview image (1200x630) for Open Graph / Twitter cards
+ogImage = "/og-image.jpg"
+ogImageAlt = "Schlomo Schapiro – Personal Archive of Public Files: talks, presentations and documents"
 homepage = "https://schlomo.schapiro.org"
 
 # Year directories for content generation (newest first)
