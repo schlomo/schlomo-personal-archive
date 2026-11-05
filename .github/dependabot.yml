@@ -1,0 +1,11 @@
+# Keep the GitHub Actions used by the Pages workflow current.
+# Hugo is pinned separately via HUGO_VERSION/HUGO_SHA256 in .github/workflows/gh-pages.yml.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      github-actions:
+        patterns: ["*"]
