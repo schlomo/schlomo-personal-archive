@@ -1,13 +1,10 @@
+/* Personal archive styles. Hugo minifies and fingerprints this file (layouts/_default/baseof.html).
+
+   Colors are NOT defined here: --primary-color, --secondary-color, --accent-color, --text-color,
+   --text-light, --background, --surface and --border come from [params.colors] in hugo.toml,
+   emitted by baseof.html. Use only those variables; never hard-code a color. */
 :root {
-    --primary-color: #2c5aa0;
-    --secondary-color: #4a90e2;
-    --accent-color: #7b68ee;
-    --text-color: #2c3e50;
-    --text-light: #6c757d;
-    --background: #f8fafc;
-    --surface: #ffffff;
-    --border: #e2e8f0;
-    --border-hover: #cbd5e0;
+    /* Derived from the palette */
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
@@ -251,7 +248,7 @@ back-link a {
 
 back-link a:hover {
     background: var(--primary-color);
-    color: white;
+    color: var(--surface);
     border-color: var(--primary-color);
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
