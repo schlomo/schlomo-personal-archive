@@ -26,3 +26,16 @@ homepage = "https://schlomo.schapiro.org"
 
 # Year directories for content generation (newest first)
 years = ["2026", "2025", "2024", "2023", "2022", "2005-2016"]
+
+# The site's color palette. Single source of truth: layouts/_default/baseof.html emits every
+# entry as a CSS custom property (primary-color -> --primary-color) before the stylesheet.
+# Never hard-code a color in assets/css/style.css or the templates.
+[params.colors]
+primary-color = "#2c5aa0"    # headings gradient start, links on hover, hover backgrounds
+secondary-color = "#4a90e2"  # links, gradient end, hover borders
+accent-color = "#7b68ee"     # year label in section headers
+text-color = "#2c3e50"       # body text
+text-light = "#6c757d"       # secondary text
+background = "#f8fafc"       # page background
+surface = "#ffffff"          # cards, buttons; text on primary-color backgrounds
+border = "#e2e8f0"           # card and thumbnail borders

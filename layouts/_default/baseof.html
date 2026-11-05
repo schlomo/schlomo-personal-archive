@@ -94,7 +94,13 @@
   </script>
     {{- end }}
 
-    <link href="/css/style.css" rel="stylesheet" type="text/css">
+    {{- /* Color palette from [params.colors] in hugo.toml, then the content-hashed stylesheet */}}
+    {{- $palette := "" }}
+    {{- range $name, $value := site.Params.colors }}{{ $palette = printf "%s--%s:%s;" $palette $name $value }}{{ end }}
+    <style>{{ printf ":root{%s}" $palette | safeCSS }}</style>
+    {{- with resources.Get "css/style.css" | minify | fingerprint }}
+    <link rel="stylesheet" href="{{ .RelPermalink }}" integrity="{{ .Data.Integrity }}">
+    {{- end }}
 </head>
 
 <body>
